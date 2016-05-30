@@ -5,6 +5,16 @@ See : https://github.com/tomolimo/formvalidation/wiki
 
 
 
+## Installation:
+- download the archive file
+- copy content of archive into your `glpi/plugins/` folder, beware that the plugin folder must be `formvalidation`. So you should have a directory like: `glpi/plugins/formvalidation/`.
+- go to glpi plugins page to install and enable the newly installed plugin.
+
+## Configuration
+See wiki pages
+
+## GLPi compatibility:
+Tested with 0.85, 0.90 and 9.1
 
 
 
