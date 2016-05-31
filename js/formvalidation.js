@@ -518,7 +518,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                         } else {
                             valList[index] += '.val()';
                         }
-                        if (field.attr('id') && field.attr('id').match(/^dropdown_/)) {
+                        if (field.attr('id') && field.attr('id').match(/^dropdown_/)) { //&& !isNaN(eval(valList[index]))
                             defaultFormula = "#>0";
                             // TODO
                             // add possibility to get label for select value of dropdown

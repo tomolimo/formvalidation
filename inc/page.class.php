@@ -21,7 +21,7 @@ class PluginFormvalidationPage extends CommonDBTM {
      * @return mixed
      */
     function getSearchOptions() {
-        global $LANG;
+       // global $LANG;
 
         $tab = array();
 
@@ -96,7 +96,7 @@ class PluginFormvalidationPage extends CommonDBTM {
     }
 
     function showForm ($ID, $options=array('candel'=>false)) {
-      global $DB, $CFG_GLPI, $LANG;
+      //global $DB;
 
       if ($ID > 0) {
          $this->check($ID,READ);
@@ -126,12 +126,14 @@ class PluginFormvalidationPage extends CommonDBTM {
                                     ));
       echo "</td></tr>";
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Child entities")."&nbsp;:</td><td>";
-      Html::showCheckbox(array('name'           => 'is_recursive',
-                                    'checked'        => $this->fields["is_recursive"]
-                                    ));
-      echo "</td></tr>";
+      if( version_compare(GLPI_VERSION,'9.1','lt') ) {
+         echo "<tr class='tab_bg_1'>";
+         echo "<td >".__("Child entities")."&nbsp;:</td><td>";
+         Html::showCheckbox(array('name'           => 'is_recursive',
+                                       'checked'        => $this->fields["is_recursive"]
+                                       ));
+         echo "</td></tr>";
+      }
 
       echo "<tr>";
       echo "<td>".__("Associated item type")." : </td>";

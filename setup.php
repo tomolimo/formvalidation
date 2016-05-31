@@ -58,7 +58,7 @@ function plugin_init_formvalidation() {
 function plugin_version_formvalidation() {
 
    return array('name'           => 'Form Validation',
-                'version'        => '0.1.0',
+                'version'        => '0.1.1',
                 'author'         => 'Olivier Moron',
                 'license'        => 'GPLv2+',
                 'homepage'       => 'https://github.com/tomolimo/formvalidation',
