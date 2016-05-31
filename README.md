@@ -1,4 +1,4 @@
-# FormValidation
+# Form Validation
 GLPi plugin to provide form validations
 This plugin gives the possibility to graphically set / unset mandatory fields on any GLPi form.
 See : https://github.com/tomolimo/formvalidation/wiki
@@ -11,7 +11,7 @@ See : https://github.com/tomolimo/formvalidation/wiki
 - go to glpi plugins page to install and enable the newly installed plugin.
 
 ## Configuration
-See wiki pages
+See wiki pages https://github.com/tomolimo/formvalidation/wiki
 
 ## GLPi compatibility:
 Tested with 0.85, 0.90 and 9.1
