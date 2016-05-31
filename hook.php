@@ -105,7 +105,8 @@ function plugin_formvalidation_install() {
                       (4, 'Simplified interface Creation', 4, 'form[name=\\\"helpdeskform\\\"][action=\\\"/front/tracking.injector.php\\\"]', 1, 1, NULL, NULL, NULL),
                       (5, 'Followup Validations', 4, 'form[name=\\\"form\\\"][action=\\\"/front/ticketfollowup.form.php\\\"]', 0, 1, NULL, NULL, NULL),
                       (6, 'Central Interface Edit', 4, 'form[name=\\\"form_ticket\\\"][action=\\\"/front/ticket.form.php\\\"]', 0, 1, NULL, NULL,NULL),
-                      (7, 'Central Interface Creation', 4, 'form[name=\\\"form_ticket\\\"][action=\\\"/front/ticket.form.php\\\"]', 1, 1, NULL, NULL, NULL);";
+                      (7, 'Central Interface Creation', 4, 'form[name=\\\"form_ticket\\\"][action=\\\"/front/ticket.form.php\\\"]', 1, 1, NULL, NULL, NULL),
+                      (8, 'form(/plugins/formvalidation/front/page.form.php)', 1, 'form[name=\\\"form\\\"][action=\\\"/plugins/formvalidation/front/page.form.php\\\"]', 1, 1, NULL, NULL, NULL);";
 
       $DB->query($query) or die("error inserting default data into glpi_plugin_formvalidation_forms" . $DB->error());
 
@@ -154,7 +155,8 @@ function plugin_formvalidation_install() {
                        (14, 'Description', 6, 'div>table:eq(2)>tbody>tr:eq(1)>td>div textarea[name=\\\"content\\\"]', NULL, 'div>table:eq(2)>tbody>tr:eq(1)>td', 'div>table:eq(2)>tbody>tr:eq(1)>th', 1, 1, NULL, NULL, NULL, NULL),
                        (15, 'Type', 6, 'div>table:eq(1)>tbody>tr:eq(0)>td:eq(0) select[name=\\\"type\\\"]', NULL, 'div>table:eq(1)>tbody>tr:eq(0)>td:eq(0)', 'div>table:eq(1)>tbody>tr:eq(0)>th:eq(0)', 1, 0, NULL, NULL, NULL, NULL),
                        (16, 'Title', 7, 'div>table:eq(2)>tbody>tr:eq(0)>td input[name=\\\"name\\\"]', NULL, 'div>table:eq(2)>tbody>tr:eq(0)>td', 'div>table:eq(2)>tbody>tr:eq(0)>th', 1, 1, NULL, NULL, NULL, NULL),
-                       (17, 'Description', 7, 'div>table:eq(2)>tbody>tr:eq(1)>td>div textarea[name=\\\"content\\\"]', NULL, 'div>table:eq(2)>tbody>tr:eq(1)>td', 'div>table:eq(2)>tbody>tr:eq(1)>th', 1, 1, NULL, NULL, NULL, NULL); " ;
+                       (17, 'Description', 7, 'div>table:eq(2)>tbody>tr:eq(1)>td>div textarea[name=\\\"content\\\"]', NULL, 'div>table:eq(2)>tbody>tr:eq(1)>td', 'div>table:eq(2)>tbody>tr:eq(1)>th', 1, 1, NULL, NULL, NULL, NULL),
+                       (18, 'Name', 8, 'div>table>tbody>tr:eq(1)>td:eq(1) input[name=\\\"name\\\"]', NULL, 'div>table>tbody>tr:eq(1)>td:eq(1)', 'div>table>tbody>tr:eq(1)>td:eq(0)', 1, 1, NULL, NULL, NULL, NULL); " ;
 
    $DB->query($query) or die("error inserting default data into glpi_plugin_formvalidation_fields" . $DB->error());
 
