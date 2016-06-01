@@ -253,14 +253,14 @@ class PluginFormvalidationField extends CommonDBTM {
                                      ));
 
             echo "</td><td class='center' width='40%'>";
-            echo "<input type='text' size='40%' maxlength=1000 name='formula_".$data['id']."' value='".htmlentities($data['formula'], ENT_QUOTES)."'>"  ;
+            echo "<input type='text' size='60' maxlength=1000 name='formula_".$data['id']."' value='".htmlentities($data['formula'], ENT_QUOTES)."'>"  ;
 
             echo "</td><td class='center'>";
             Html::showCheckbox(array('name'           => 'show_mandatory_'.$data['id'],
                                     'checked'        => $data['show_mandatory']
                                     ));
             echo "</td><td class='center' width='40%'>";
-            echo "<input type='text' size='40%' maxlength=1000 name='show_mandatory_if_".$data['id']."' value='".htmlentities($data['show_mandatory_if'], ENT_QUOTES)."'>"  ;
+            echo "<input type='text' size='40' maxlength=1000 name='show_mandatory_if_".$data['id']."' value='".htmlentities($data['show_mandatory_if'], ENT_QUOTES)."'>"  ;
             echo "</td></tr>";
          }
          echo $header_begin.$header_bottom.$header_end;
