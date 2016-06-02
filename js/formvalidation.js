@@ -144,16 +144,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
     if (location.href.indexOf('withtemplate=1') == -1) {
         (function () {
             //debugger;
-            //------------------------------------------
-            // ajax call to load localized string
-            $.ajax({
-                url: ARRoot + '/plugins/formvalidation/ajax/getLocales.php',
-                success: function (response, options) { /*debugger;*/ ARL = $.parseJSON(response); },
-                failure: function (response, options) { /*debugger;*/  }
-            });
 
-            //------------------------------------------
-            // ajax call to load the validation data
             ///plugins/formvalidation/front/page.form.php
             var itemtype = location.pathname.match(/(plugin)s\/([a-z]+)(?:\/[a-z]+)+\/([a-z]+)\.form\.php$/);
             if (!itemtype) {
@@ -176,6 +167,16 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
             var items_id = location.search.match(/id=([0-9]+)/);
             items_id = (items_id?items_id[1]:0) ;
             if (itemtype) {
+                //------------------------------------------
+                // ajax call to load localized string
+                $.ajax({
+                    url: ARRoot + '/plugins/formvalidation/ajax/getLocales.php',
+                    success: function (response, options) { /*debugger;*/ ARL = $.parseJSON(response); },
+                    failure: function (response, options) { /*debugger;*/ }
+                });
+
+                //------------------------------------------
+                // ajax call to load the validation data
                 itemtype.shift();
                 capitalizeArray(itemtype);
                 $.ajax({
