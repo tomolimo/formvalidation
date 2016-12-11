@@ -115,8 +115,8 @@ class PluginFormvalidationPage extends CommonDBTM {
       echo "<input type='text' size='50' maxlength=250 name='name' ".
                   " value=\"".htmlentities($this->fields["name"], ENT_QUOTES)."\">";
       echo "</td>";
-      echo "<td rowspan='4' class='middle right'>".__("Comments")."&nbsp;:</td>";
-      echo "<td class='center middle' rowspan='4'><textarea cols='45' rows='5' name='comment' >".
+      echo "<td rowspan='3' class='middle right'>".__("Comments")."&nbsp;:</td>";
+      echo "<td class='center middle' rowspan='3'><textarea cols='45' rows='5' name='comment' >".
       htmlentities($this->fields["comment"], ENT_QUOTES)."</textarea></td></tr>";
 
       echo "<tr class='tab_bg_1'>";

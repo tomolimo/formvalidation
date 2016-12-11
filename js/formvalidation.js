@@ -122,14 +122,15 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
         // Dialog and its properties.
         $('<div></div>').dialog({
             open: function (event, ui) { $('.ui-dialog-titlebar-close').hide(); },
-            close: function (event, ui) { $(this).remove(); },
+            close: function (event, ui) { $(this).remove(); $('.ui-widget-overlay.ui-front').remove(); },
             resizable: false,
             modal: true,
             title: title,
             buttons: {
                 'Ok': function () {
-                    $(this).dialog('close');
-                    if( okCallback ) okCallback();
+                    
+                    $(this).dialog('close');                  
+                    if (okCallback) okCallback();                    
                 }
             }
         }).html(msg);
@@ -145,8 +146,12 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
         (function () {
             //debugger;
 
-            ///plugins/formvalidation/front/page.form.php
+            // "/plugins/formvalidation/front/page.form.php"
+            // "/plugins/rayusermanagementticket/front/rayusermanagementticket.helpdesk.public.php"
             var itemtype = location.pathname.match(/(plugin)s\/([a-z]+)(?:\/[a-z]+)+\/([a-z]+)\.form\.php$/);
+            if (!itemtype) {
+                itemtype = location.pathname.match(/(plugin)s\/([a-z]+)(?:\/[a-z]+)+\/([a-z]+)\.helpdesk.public\.php$/);
+            }
             if (!itemtype) {
                 itemtype = location.pathname.match(/front\/helpdesk.public.php$/);
                 if (itemtype && !location.search.match(/^\?create_ticket=1$/)) {
@@ -1066,7 +1071,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
 
                 //------------------------------------------
-                $('body').on('mouseover', 'form div.select2-container, form input:text:visible:not(.select2-focusser), form textarea:visible, form td.mceIframeContainer iframe, form span.form-group-checkbox', function () {
+                $('body').on('mouseover', 'form div.select2-container, form input:text:visible:not(.select2-focusser), form textarea:visible, form td.mceIframeContainer iframe, form div.mce-edit-area.mce-container.mce-panel.mce-stack-layout-item.mce-last iframe,form span.form-group-checkbox, form input[type=checkbox]', function () {
                     if (selectMode==SELECT_FIELD) {
                         var field = false;
 
@@ -1081,7 +1086,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                                 };
                                 break;
                             case 'div':
-                                jqValueElt = $('#' + this.id.match(/s2id_(\w*)/i)[1]).first();
+                                jqValueElt = $('#' + this.id.match(/s2id_([a-z0-9_\-]*)/i)[1]).first();
                                 field = {
                                     'jq_value_elt': jqValueElt,
                                     'jq_focus_elt': $(this),
