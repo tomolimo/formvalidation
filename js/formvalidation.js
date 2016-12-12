@@ -391,6 +391,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                         valField += '.contents().find(\'body\').text()';
                     } else if (field[0].type == 'checkbox') {
                         valField += ".first().prop('checked')";
+                    } else if (field[0].type == 'radio') {
+                        valField += ".filter(':checked').val()";
                     } else {
                         valField += '.val()';
                     }
@@ -520,6 +522,9 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                             valList[index] += '.text()';
                         } else if (field[0].type == 'checkbox') {
                             valList[index] += ".first().prop('checked')";
+                            defaultFormula = "true";
+                        } else if (field[0].type == 'radio') {
+                            valList[index] += ".filter(':checked').val()";
                             defaultFormula = "true";
                         } else {
                             valList[index] += '.val()';
@@ -1047,23 +1052,26 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
                 function myMouseEnter(eventObject) {
                     if (selectMode == SELECT_ERRORSIGN || selectMode == SELECT_MANDATORYSIGN) {
-                        var field = $(document.elementFromPoint(eventObject.pageX, eventObject.pageY)); //$(this).first();
-                        switch (selectMode) {
-                            case SELECT_ERRORSIGN:
-                                //debugger;
-                                if ($.contains($("#field-overlay").data("fieldData")['jq_focus_elt'][0], this)) {
-                                    field = $("#field-overlay").data("fieldData")['jq_focus_elt'];
-                                }
-                                showSignOverlay("errorsign-overlay", field.offset().top, field.offset().left, field.outerWidth(), field.outerHeight());
-                                $("#field-overlay").data("fieldData")['jq_errorsign_elt'] = field;
-                                break;
-                            case SELECT_MANDATORYSIGN:
-                                showSignOverlay("mandatorysign-overlay", field.offset().top, field.offset().left, field.outerWidth(), field.outerHeight());
-                                $("#field-overlay").data("fieldData")['jq_mandatorysign_elt'] = field;
-                                break;
+                        var field = $(document.elementFromPoint(eventObject.clientX, eventObject.clientY)); 
+                        //console.log(eventObject.pageX + ', ' + eventObject.pageY + ' / ' + eventObject.clientX + ', ' + eventObject.clientY);
+                        if (field.length > 0) {
+                            switch (selectMode) {
+                                case SELECT_ERRORSIGN:
+                                    //debugger;
+                                    if ($.contains($("#field-overlay").data("fieldData")['jq_focus_elt'][0], this)) {
+                                        field = $("#field-overlay").data("fieldData")['jq_focus_elt'];
+                                    }
+                                    showSignOverlay("errorsign-overlay", field.offset().top, field.offset().left, field.outerWidth(), field.outerHeight());
+                                    $("#field-overlay").data("fieldData")['jq_errorsign_elt'] = field;
+                                    break;
+                                case SELECT_MANDATORYSIGN:
+                                    showSignOverlay("mandatorysign-overlay", field.offset().top, field.offset().left, field.outerWidth(), field.outerHeight());
+                                    $("#field-overlay").data("fieldData")['jq_mandatorysign_elt'] = field;
+                                    break;
+                            }
+                            eventObject.stopImmediatePropagation();
+                            eventObject.preventDefault();
                         }
-                        eventObject.stopImmediatePropagation();
-                        eventObject.preventDefault();
                     }
                 }
 
@@ -1071,7 +1079,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
 
                 //------------------------------------------
-                $('body').on('mouseover', 'form div.select2-container, form input:text:visible:not(.select2-focusser), form textarea:visible, form td.mceIframeContainer iframe, form div.mce-edit-area.mce-container.mce-panel.mce-stack-layout-item.mce-last iframe,form span.form-group-checkbox, form input[type=checkbox]', function () {
+                $('body').on('mouseover', 'form div.select2-container, form input[type=radio], form input:text:visible:not(.select2-focusser), form textarea:visible, form td.mceIframeContainer iframe, form div.mce-edit-area.mce-container.mce-panel.mce-stack-layout-item.mce-last iframe,form span.form-group-checkbox, form input[type=checkbox]', function () {
                     if (selectMode==SELECT_FIELD) {
                         var field = false;
 
