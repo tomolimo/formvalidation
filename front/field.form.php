@@ -57,9 +57,13 @@ if (isset($_POST["purge"])) {
       foreach( $_POST as $key => $val ) {
          $match = array();
          if( preg_match( "/^formula_(\\d+)$/", $key, $match ) ) {
+            $ID = $match[1] ;
+            $field->check($ID, UPDATE);
+
             $formula = Html::entity_decode_deep( $val ) ;
             $formula = ($formula===''?'NULL':$formula);
-            $ID = $match[1] ;
+
+            $_POST["show_mandatory_if_$ID"] = Html::entity_decode_deep( $_POST["show_mandatory_if_$ID"] ) ;
             $post = array( 'id' => $ID, 'formula' => $formula, 'is_active' => $_POST["is_active_$ID"], 'show_mandatory' => $_POST["show_mandatory_$ID"], 'show_mandatory_if' => $_POST["show_mandatory_if_$ID"] );
             $field->update($post);
          }
@@ -69,6 +73,8 @@ if (isset($_POST["purge"])) {
       // then we have only one field
       $field->check($_POST["id"], UPDATE);
 
+      $_POST["formula"] = Html::entity_decode_deep( $_POST["formula"] ) ;
+      $_POST["show_mandatory_if"] = Html::entity_decode_deep( $_POST["show_mandatory_if"] ) ;
       $field->update($_POST);
    }
 

@@ -55,6 +55,8 @@ if (isset($_POST["purge"])) {
 
 } else if (isset($_POST["update"])) {
    $form->check($_POST["id"], UPDATE);
+   
+   $_POST["formula"] = Html::entity_decode_deep( $_POST["formula"] ) ;
 
    $form->update($_POST);
    //Event::log($_POST["id"], "change", 4, "maintain",
