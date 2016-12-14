@@ -118,7 +118,7 @@ class PluginFormvalidationField extends CommonDBTM {
     /**
      * @since version 0.85
      **/
-   static function displayTabContentForItem(PluginFormvalidationForm $item, $tabnum=1, $withtemplate=0) {
+    static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
 
       self::showForForm($item);
 
@@ -232,7 +232,7 @@ class PluginFormvalidationField extends CommonDBTM {
          $header_end .= "<th>".__("Mandatory sign formula", 'formvalidation')."</th></tr>";
          echo $header_begin.$header_top.$header_end;
 
-         for ($i=$start, $j=0 ; ($i < $number) && ($j < $_SESSION['glpilist_limit']) ; $i++, $j++) {
+         for ($i=$start, $j=0 ; ($i < $number)  ; $i++, $j++) {
             $data = $used[$i];
             $field->getFromDB($data["id"]);
             if( !isset($field->fields['name']) || $field->fields['name'] == "") {

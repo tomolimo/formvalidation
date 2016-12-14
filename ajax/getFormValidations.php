@@ -48,7 +48,10 @@ $obj = getItemForItemtype( $_GET['itemtype'] ) ;
 if( $obj ) {
    if( $_GET['id'] > 0 ) {
       $obj->getFromDB( $_GET['id'] ) ;
-      $entity_restrict = $obj->fields['entities_id'] ;
+      $entity_restrict = 0 ; // by default if $obj doesn't have entities_id in table
+      if( isset($obj->fields['entities_id']) ) {
+         $entity_restrict = $obj->fields['entities_id'] ;
+      }
    } else {
       $is_createitem = 1 ;
       $entity_restrict = $_SESSION['glpiactive_entity'] ;

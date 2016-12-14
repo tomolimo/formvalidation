@@ -150,6 +150,7 @@ class PluginFormvalidationForm extends CommonDBTM {
        $query = "SELECT DISTINCT `glpi_plugin_formvalidation_forms`.`id`,
                        `glpi_plugin_formvalidation_forms`.`id` AS linkID,
                        `glpi_plugin_formvalidation_forms`.`name`,
+                       `glpi_plugin_formvalidation_forms`.`pages_id`,
                        `glpi_plugin_formvalidation_forms`.`css_selector`,
                        `glpi_plugin_formvalidation_forms`.`is_active`,
                        `glpi_plugin_formvalidation_forms`.`is_createitem`,

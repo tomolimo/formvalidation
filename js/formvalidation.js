@@ -1052,7 +1052,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
                 function myMouseEnter(eventObject) {
                     if (selectMode == SELECT_ERRORSIGN || selectMode == SELECT_MANDATORYSIGN) {
-                        var field = $(document.elementFromPoint(eventObject.clientX, eventObject.clientY)); 
+                        var field = $(document.elementFromPoint(eventObject.clientX, eventObject.clientY)); //$(this).first();
                         //console.log(eventObject.pageX + ', ' + eventObject.pageY + ' / ' + eventObject.clientX + ', ' + eventObject.clientY);
                         if (field.length > 0) {
                             switch (selectMode) {
