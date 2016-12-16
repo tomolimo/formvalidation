@@ -26,7 +26,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
 */
 $LANG['plugin_formvalidation']['alert']="Validation formulaire";
-$LANG['plugin_formvalidation']['mandatorytitle']="Champs obligatoires :";
+$LANG['plugin_formvalidation']['mandatorytitle']="Champs obligatoires ou valeurs erronées :";
 $LANG['plugin_formvalidation']['formulaerror']="Contactez votre administrateur : une erreur d'évaluation est survenue dans la formule : ";
 
 // Form Validation Messages

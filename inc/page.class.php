@@ -158,6 +158,7 @@ class PluginFormvalidationPage extends CommonDBTM {
     }
 
     static function getItemtypes() {
+       echo '';
        return array(
           __("Assets") => array(
              'Computer'           => _n("Computer", "Computers", 2),
@@ -186,8 +187,11 @@ class PluginFormvalidationPage extends CommonDBTM {
              'User'               => _n("User", "Users", 2),
              'Group'              => _n("Group", "Groups", 2),
              'Entity'             => _n("Entity", "Entities", 2),
-             'Profile'            => _n("Profile", "Profiles", 2))
-      );
+             'Profile'            => _n("Profile", "Profiles", 2)),
+          __("Plugins") => array(
+             'PluginFormcreatorForm' => "Form Creator"
+             )
+         );
    }
 
 

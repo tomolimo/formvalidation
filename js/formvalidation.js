@@ -102,7 +102,13 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
         return /^(?:[0-1]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(str);
     }
 
-
+    //------------------------------------------
+    // helper function to verify a if a string 
+    // is really an integer
+    //------------------------------------------
+    function isValidInteger(str) {
+        return /^\d+$/.test(str);
+    }
 
     //------------------------------------------
     // helper function to count words in a given string 
@@ -159,7 +165,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
         $('<div></div>').dialog({
             open: function (event, ui) { $('.ui-dialog-titlebar-close').hide(); },
             close: function (event, ui) { $(this).remove(); $('.ui-widget-overlay.ui-front').remove(); },
-            resizable: false,
+            resizable: true,
             modal: true,
             title: title,
             buttons: {
@@ -184,9 +190,13 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
             // "/plugins/formvalidation/front/page.form.php"
             // "/plugins/rayusermanagementticket/front/rayusermanagementticket.helpdesk.public.php"
+            // "/plugins/formcreator/front/formdisplay.php"
             var itemtype = location.pathname.match(/(plugin)s\/([a-z]+)(?:\/[a-z]+)+\/([a-z]+)\.form\.php$/);
             if (!itemtype) {
                 itemtype = location.pathname.match(/(plugin)s\/([a-z]+)(?:\/[a-z]+)+\/([a-z]+)\.helpdesk.public\.php$/);
+            }
+            if (!itemtype) {
+                itemtype = location.pathname.match(/(plugin)s\/(formcreator)\/front\/(form)display.php$/);
             }
             if (!itemtype) {
                 itemtype = location.pathname.match(/front\/helpdesk.public.php$/);

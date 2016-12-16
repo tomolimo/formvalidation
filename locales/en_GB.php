@@ -26,7 +26,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
 */
 $LANG['plugin_formvalidation']['alert']="Form Validation";
-$LANG['plugin_formvalidation']['mandatorytitle']="Mandatory fields:";
+$LANG['plugin_formvalidation']['mandatorytitle']="Mandatory fields or wrong values:";
 $LANG['plugin_formvalidation']['formulaerror']="Contact your admin: an evaluation error occured in formula: ";
 
 // Form Validation Messages
@@ -42,3 +42,4 @@ $LANG['plugin_formvalidation']['formulaerror']="Contact your admin: an evaluatio
 $LANG['plugin_formvalidation']['forms'][4][4][10]="Description must be at least 10 chars and 5 words.";
 $LANG['plugin_formvalidation']['forms'][4][5][12]="Description must be at least 10 chars and 3 words.";
 $LANG['plugin_formvalidation']['forms'][4][6][14]="Description must be at least 10 chars and 5 words.";
+
