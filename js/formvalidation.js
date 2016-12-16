@@ -601,7 +601,10 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                             // eval(txtField.parent().find('.select2-chosen').text())
                         }
                         formulaList[index] = obj.formula || defaultFormula;
-                    } else {
+                        if (obj.is_active == 0) {
+                            formulaList[index] = 'true';
+                        }
+                    } else { // field not found in current form
                         //obj.is_active = 0; // field not found in current form
                         formulaList[index] = 'true';
                     }
