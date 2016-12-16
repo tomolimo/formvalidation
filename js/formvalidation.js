@@ -34,6 +34,42 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
         return glpiURL.substr(0, pos);
     }
 
+    function getUpDownDOMPath(pathEltSign, pathEltValue) {
+        var aEltSign = pathEltSign.split('>');
+        var aEltValue = pathEltValue.split('>');
+        var ret = {'up' : '', 'down' : ''};
+        var found = false;
+        var i = 0;
+        while (aEltSign[i] === aEltValue[i]) {
+            found = true;
+            i++;
+        }
+        if (found) {
+            for (var j = 0; j < i; j++) {
+                ret.up = (ret.up == '' ? '' : ret.up + '>') + aEltSign[j];
+            }
+            ret.up = ret.up.replace(/:eq\(\d+\)/g, '');
+        }
+        for (; i < aEltSign.length; i++) {
+            ret.down = (ret.down == '' ? '' : ret.down + '>') + aEltSign[i];
+        }
+        return ret;
+    }
+
+    function getObjFromSelectors(elt, fieldData, eltName) {
+        var locElt = elt;
+        if( elt.prop('nodeName').toLowerCase() == 'form' ) {
+            locElt = elt.find('>' + fieldData.css_selector_value);
+        }
+        if (fieldData[eltName + '_rel'].up != '') {
+            locElt = locElt.parents(fieldData[eltName + '_rel'].up);
+        }
+        if (fieldData[eltName + '_rel'].down != '') {
+            locElt = locElt.find(fieldData[eltName + '_rel'].down);
+        }
+        return locElt;
+    }
+
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
@@ -190,6 +226,14 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                     success: function (response, options) {
                         //debugger;
                         ARV = $.parseJSON(response);
+
+                        $.each(ARV.forms, function (formIndex, formData) {
+                            $.each(formData.fields, function (fieldIndex, fieldData) {
+                                ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel = getUpDownDOMPath(fieldData.css_selector_mandatorysign, fieldData.css_selector_value);
+                                ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign_rel = getUpDownDOMPath(fieldData.css_selector_errorsign, fieldData.css_selector_value);
+                            });
+                        });
+
                         $(document).ajaxComplete(installRunMode);
 
                         if (ARV.config.editmode == 1 && ARV.pages_id > 0) {
@@ -298,8 +342,14 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                                 thisForm.on('change keyup click input', '[glpi-pluginformvalidation-fieldindex="' + fieldData.id + '"]', { fldId: fld.id, fldData: fld }, function (EventObject) {
                                     //debugger;
                                     var thisForm = $(EventObject.delegateTarget);
-                                    var errorsignField = thisForm.find('>' + EventObject.data.fldData.css_selector_errorsign);
-                                    var mandatorysignField = thisForm.find('>' + EventObject.data.fldData.css_selector_mandatorysign);
+                                    //var errorsignField = thisForm.find('>' + EventObject.data.fldData.css_selector_errorsign);
+                                    var errorsignField = getObjFromSelectors(thisForm, EventObject.data.fldData, 'css_selector_errorsign'); //thisForm.find('>' + EventObject.data.fldData.css_selector_value)
+                                        //.parents(EventObject.data.fldData.css_selector_value_rel.up)
+                                        //.find(EventObject.data.fldData.css_selector_value_rel.down);
+                                    //var mandatorysignField = thisForm.find('>' + EventObject.data.fldData.css_selector_mandatorysign);
+                                    var mandatorysignField = getObjFromSelectors( thisForm, EventObject.data.fldData, 'css_selector_mandatorysign');
+                                        //.parents(EventObject.data.fldData.css_selector_mandatorysign_rel.up)
+                                        //.find(EventObject.data.fldData.css_selector_mandatorysign_rel.down);
                                     var showMandatory = eval(EventObject.data.fldData.show_mandatory_if);
                                     showHideMandatorySign(mandatorysignField, showMandatory);
                                     if (!showMandatory) {
@@ -312,7 +362,9 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                                     }
                                 });
                                 if (!fld.show_mandatory_if.match(/#\d+\b/g)) {
-                                    showHideMandatorySign(thisForm.find('>' + fld.css_selector_mandatorysign), eval(fld.show_mandatory_if));
+                                    //showHideMandatorySign(thisForm.find('>' + fld.css_selector_mandatorysign), eval(fld.show_mandatory_if));
+                                    showHideMandatorySign(getObjFromSelectors(thisForm, fld, 'css_selector_mandatorysign'), eval(fld.show_mandatory_if)); // .find('>' + fld.css_selector_value)
+                                        //.parents( fld.css_selector_mandatorysign_rel.up).find(fld.css_selector_mandatorysign_rel.down) , eval(fld.show_mandatory_if));
                                 }
                             }
                         }
@@ -332,8 +384,12 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
                         // toggles the mandatory sign
                         // and stores 'initial text'
-                        showHideMandatorySign(thisForm.find('>' + fieldData.css_selector_mandatorysign), mandatory_sign) ;
-                        showHideErrorSign(thisForm.find('>' + fieldData.css_selector_errorsign), true); // will be shown only if edit mode
+                        //showHideMandatorySign(thisForm.find('>' + fieldData.css_selector_mandatorysign), mandatory_sign);
+                        showHideMandatorySign(getObjFromSelectors(thisForm, fieldData, 'css_selector_mandatorysign'), mandatory_sign);    //.find('>' + fieldData.css_selector_value)
+                            //.parents(fieldData.css_selector_mandatorysign_rel.up)
+                            //.find(fieldData.css_selector_mandatorysign_rel.down), mandatory_sign);
+                        //showHideErrorSign(thisForm.find('>' + fieldData.css_selector_errorsign), true); // will be shown only if edit mode
+                        showHideErrorSign(getObjFromSelectors(thisForm, fieldData, 'css_selector_errorsign'), true); // will be shown only if edit mode
 
                     }
                 }
@@ -419,8 +475,14 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
                     // hides the mandatory sign
                     $.each(fields, function (index, field) {
-                        showHideMandatorySign($(formCss).find('>' + fieldData.css_selector_mandatorysign), false);
-                        showHideErrorSign($(formCss).find('>' + fieldData.css_selector_errorsign), false);
+                        //showHideMandatorySign($(formCss).find('>' + fieldData.css_selector_mandatorysign), false);
+                        showHideMandatorySign(getObjFromSelectors( $(formCss), fieldData, 'css_selector_mandatorysign'), false); // .find('>' + fieldData.css_selector_value)
+                            //.parents(fieldData.css_selector_mandatorysign_rel.up)
+                            //.find(fieldData.css_selector_mandatorysign_rel.down), false);
+                        //showHideErrorSign($(formCss).find('>' + fieldData.css_selector_errorsign), false);
+                        showHideErrorSign(getObjFromSelectors( $(formCss), fieldData, 'css_selector_errorsign'), false); // .find('>' + fieldData.css_selector_value)
+                            //.parents(fieldData.css_selector_errorsign_rel.up)
+                            //.find(fieldData.css_selector_errorsign_rel.down), false);
                     });
                 }
             }
@@ -460,10 +522,11 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
             function clearPreviousValidationErrors(eventObject) {
                 var locEltList = eventObject.data.fields;
                 $.each(locEltList, function (index, obj) {
-                    var fieldErrorSign = $(eventObject.target).find('>' + obj.css_selector_errorsign);
+//                    var fieldErrorSign = $(eventObject.target).find('>' + obj.css_selector_errorsign);
                     var field = $(eventObject.target).find('>' + obj.css_selector_value);
                     if (field.length > 0) {
-                        if (field[0].localName == 'iframe') { 
+                        var fieldErrorSign = getObjFromSelectors(field, obj, 'css_selector_errorsign'); // field.parents(obj.css_selector_errorsign_rel.up).find(obj.css_selector_errorsign_rel.down);
+                        if (field[0].localName == 'iframe') {
                             field.contents().find('body').trigger('click');
                         } else {
                             fieldErrorSign.trigger('focusin');
@@ -537,14 +600,16 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                             // we may get the label associated with the dropdown value with
                             // eval(txtField.parent().find('.select2-chosen').text())
                         }
-                    } else {
-                        obj.is_active = 0; // field not found in current form
-                    }
-                    if (obj.is_active == 1) {
                         formulaList[index] = obj.formula || defaultFormula;
                     } else {
+                        //obj.is_active = 0; // field not found in current form
                         formulaList[index] = 'true';
                     }
+                    //if (obj.is_active == 1) {
+                    //    formulaList[index] = obj.formula || defaultFormula;
+                    //} else {
+                    //    formulaList[index] = 'true';
+                    //}
                     var formRegex = new RegExp("#" + index + "\\b", "g");
                     formFormula = formFormula.replace(formRegex, valList[index]);
                 });
@@ -599,7 +664,10 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                             // or when a localized string exists, will use it
                             var field = eval(fieldListSelector[index]); 
                             objErrorList[index] = obj;
-                            var locErrorMessage = '* ' + thisForm.find('>' + obj.css_selector_mandatorysign).data('initialText');  // by default
+                            //var locErrorMessage = '* ' + thisForm.find('>' + obj.css_selector_mandatorysign).data('initialText');  // by default
+                            var locErrorMessage = '* ' + getObjFromSelectors(thisForm, obj, 'css_selector_mandatorysign').data('initialText'); //thisForm.find('>' + obj.css_selector_value)
+                                //.parents(fieldData.css_selector_mandatorysign_rel.up)
+                                //.find(fieldData.css_selector_mandatorysign_rel.down).data('initialText');  // by default
                             try {
                                 if (ARL.plugin_formvalidation.forms[ARV.pages_id][obj.forms_id][obj.id]) {
                                     locErrorMessage = '* ' + ARL.plugin_formvalidation.forms[ARV.pages_id][obj.forms_id][obj.id];
@@ -613,7 +681,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
                             // show the focus in 'red'!
                             var focusEvent = 'click change focusin';
-                            var fieldErrorSign = thisForm.find('>' + obj.css_selector_errorsign); 
+                            //var fieldErrorSign = thisForm.find('>' + obj.css_selector_errorsign);
+                            var fieldErrorSign = getObjFromSelectors(thisForm, obj, 'css_selector_errorsign');// thisForm.find('>' + obj.css_selector_value).parents(obj.css_selector_errorsign_rel.up).find(obj.css_selector_errorsign_rel.down);
                             var fieldFocus = fieldErrorSign; // field;
                             if (field[0].localName == 'iframe') { 
                                 fieldFocus = field.contents().find('body');
@@ -942,8 +1011,11 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                                     //debugger;
                                     var infoField = $.parseJSON(response);
                                     if (infoField) {
-                                        var jqMandatorysignField = $(ARV.forms[formIndex].css_selector + '>' + ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign);
-                                        var jqErrorsignField = $(ARV.forms[formIndex].css_selector + '>' + ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign ) ;
+                                        var jqMandatorysignField = getObjFromSelectors($(ARV.forms[formIndex].css_selector), ARV.forms[formIndex].fields[fieldIndex], 'css_selector_mandatorysign');
+                                            //$(ARV.forms[formIndex].css_selector + '>' + ARV.forms[formIndex].fields[fieldIndex].css_selector_value)
+                                            //.parents(ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel.up)
+                                            //.find(ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel.down);
+                                        // ??? var jqErrorsignField = $(ARV.forms[formIndex].css_selector + '>' + ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign ) ;
                                         ARV.forms[formIndex].fields[fieldIndex].show_mandatory = 0;
                                         showHideMandatorySign(jqMandatorysignField, 0) ;
                                         alertCallback("Mandatory sign hidden<br>'" + ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Mandatory sign hidden", restoreSelectMode);
@@ -1015,6 +1087,9 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                                         ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign = mandatorysignPath.path;
                                         ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign = errorsignPath.path;
                                     }
+                                    ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel = getUpDownDOMPath(mandatorysignPath.path, ARV.forms[formIndex].fields[fieldIndex].css_selector_value);
+                                    ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign_rel = getUpDownDOMPath(errorsignPath.path, ARV.forms[formIndex].fields[fieldIndex].css_selector_value);
+
                                     installFormValidations(ARV.forms[formIndex]); // to be sure current form is checked with newly created field
                                     if (infoField.forms_id) {
                                         alertCallback("Field activated<br>'" + mandatorysignText + "'<br>field_id: " + fieldIndex, "Field activated", restoreSelectMode);
