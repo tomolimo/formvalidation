@@ -151,7 +151,7 @@ EOT;
          foreach ($DB->request( $query." AND ( $where )" ) as $form) {
             foreach ($DB->request("SELECT * from glpi_plugin_formvalidation_fields WHERE forms_id = ".$form['id'])  as $field) {
                $matches = array();
-               if (preg_match('/\[(name|id\^)=\\\\{0,1}"(?<name>[a-z_\-0-9]+)\\\\{0,1}"\]/i', $field['css_selector_value'], $matches)) { //&& array_key_exists($matches['name'], $pinput)) {
+               if (preg_match('/\[(name|id\^)=\\\\{0,1}"(?<name>[a-z_\-0-9]+)\\\\{0,1}"\]/i', $field['css_selector_value'], $matches)) { 
                   $fieldnames[$field['id']]=$matches['name'];
                   $formulas[$field['id']]=($field['formula'] ? $field['formula'] : '#>0 || #!=""');
                   $fieldtitles[$field['id']]=$field['name'];

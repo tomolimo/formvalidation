@@ -27,48 +27,49 @@ class PluginFormvalidationPage extends CommonDBTM {
 
       $tab['common'] = __('Page', 'formvalidation');
 
-      $tab[1]['table']          = $this->getTable();
-      $tab[1]['field']          = 'name';
-      $tab[1]['name']           = __('Title');
-      $tab[1]['datatype']       = 'itemlink';
-      $tab[1]['searchtype']     = 'contains';
-      $tab[1]['massiveaction']  = false;
-      $tab[1]['itemlink_type']  = $this->getType();
+      $tab[1]['table']           = $this->getTable();
+      $tab[1]['field']           = 'name';
+      $tab[1]['name']            = __('Title');
+      $tab[1]['datatype']        = 'itemlink';
+      $tab[1]['searchtype']      = 'contains';
+      $tab[1]['massiveaction']   = false;
+      $tab[1]['itemlink_type']   = $this->getType();
 
-      $tab[803]['table']        = 'glpi_plugin_formvalidation_itemtypes';
-      $tab[803]['field']        = 'name';
-      $tab[803]['linkfield']    = 'itemtypes_id';
-      $tab[803]['name']         = __('Associated item type');
-      $tab[803]['datatype']     = 'dropdown';
+      $tab[803]['table']         = 'glpi_plugin_formvalidation_itemtypes';
+      $tab[803]['field']         = 'name';
+      $tab[803]['linkfield']     = 'itemtypes_id';
+      $tab[803]['name']          = __('Associated item type');
+      $tab[803]['massiveaction'] = false;
+      $tab[803]['datatype']      = 'dropdown';
 
-      $tab[8]['table']          = $this->getTable();
-      $tab[8]['field']          = 'is_active';
-      $tab[8]['name']           = __('Active');
-      $tab[8]['massiveaction']  = true;
-      $tab[8]['datatype']       = 'bool';
+      $tab[8]['table']           = $this->getTable();
+      $tab[8]['field']           = 'is_active';
+      $tab[8]['name']            = __('Active');
+      $tab[8]['massiveaction']   = true;
+      $tab[8]['datatype']        = 'bool';
 
-      $tab[4]['table']          = $this->getTable();
-      $tab[4]['field']          = 'comment';
-      $tab[4]['name']           = __('Comments');
-      $tab[4]['massiveaction']  = true;
-      $tab[4]['datatype']       = 'text';
+      $tab[4]['table']           = $this->getTable();
+      $tab[4]['field']           = 'comment';
+      $tab[4]['name']            = __('Comments');
+      $tab[4]['massiveaction']   = true;
+      $tab[4]['datatype']        = 'text';
 
-      $tab[19]['table']         = $this->getTable();
-      $tab[19]['field']         = 'date_mod';
-      $tab[19]['name']          = __('Last update');
-      $tab[19]['datatype']      = 'datetime';
-      $tab[19]['massiveaction'] = false;
+      $tab[19]['table']          = $this->getTable();
+      $tab[19]['field']          = 'date_mod';
+      $tab[19]['name']           = __('Last update');
+      $tab[19]['datatype']       = 'datetime';
+      $tab[19]['massiveaction']  = false;
 
-      $tab[80]['table']         = 'glpi_entities';
-      $tab[80]['field']         = 'completename';
-      $tab[80]['name']          = __('Entity');
-      $tab[80]['massiveaction'] = false;
-      $tab[80]['datatype']      = 'dropdown';
+      $tab[80]['table']          = 'glpi_entities';
+      $tab[80]['field']          = 'completename';
+      $tab[80]['name']           = __('Entity');
+      $tab[80]['massiveaction']  = false;
+      $tab[80]['datatype']       = 'dropdown';
 
-      $tab[86]['table']         = $this->getTable();
-      $tab[86]['field']         = 'is_recursive';
-      $tab[86]['name']          = __('Child entities');
-      $tab[86]['datatype']      = 'bool';
+      $tab[86]['table']          = $this->getTable();
+      $tab[86]['field']          = 'is_recursive';
+      $tab[86]['name']           = __('Child entities');
+      $tab[86]['datatype']       = 'bool';
 
       return $tab;
    }

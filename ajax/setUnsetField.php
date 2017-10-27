@@ -40,11 +40,11 @@ if (isset($_REQUEST['action'])) {
    switch ($_REQUEST['action']) {
       case 'set' :
          if ($_REQUEST['fieldindex'] > 0) {
-            $query = "UPDATE glpi_plugin_formvalidation_fields 
-                     SET is_active=1, 
-                        show_mandatory=1, 
-                        css_selector_errorsign='".$DB->escape(html_entity_decode( $_REQUEST['css_selector_errorsign']))."', 
-                        css_selector_mandatorysign='".$DB->escape(html_entity_decode( $_REQUEST['css_selector_mandatorysign']))."' 
+            $query = "UPDATE glpi_plugin_formvalidation_fields
+                     SET is_active=1,
+                        show_mandatory=1,
+                        css_selector_errorsign='".$DB->escape(html_entity_decode( $_REQUEST['css_selector_errorsign']))."',
+                        css_selector_mandatorysign='".$DB->escape(html_entity_decode( $_REQUEST['css_selector_mandatorysign']))."'
                      WHERE id=".$_REQUEST['fieldindex'];
             if ($DB->query( $query ) && $DB->affected_rows() > 0) {
                $ret = true;

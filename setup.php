@@ -57,17 +57,24 @@ function plugin_init_formvalidation() {
    //           'Ticket' => array('PluginFormvalidationHook', 'plugin_pre_item_add_formvalidation')
    //       );
 
-   $PLUGIN_HOOKS['pre_item_update']['formvalidation'] = array(
-              'Ticket' => array('PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'),
-              'Computer' => array('PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation')
-          );
+   if (extension_loaded('v8js')) {
+      // used only for validation of massiveactions
+      // can only be done with v8js module
+      $PLUGIN_HOOKS['pre_item_update']['formvalidation'] = array(
+                 'Ticket' => array('PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'),
+                 'Computer' => array('PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation')
+             );
+   }
 
    $PLUGIN_HOOKS['pre_show_item']['formvalidation'] = array('PluginFormvalidationHook', 'plugin_pre_show_tab_formvalidation');
 
    $PLUGIN_HOOKS['post_item_form']['formvalidation'] = array('PluginFormvalidationHook', 'plugin_post_item_form_formvalidation');
 
    // Add specific files to add to the header : javascript or css
-   $PLUGIN_HOOKS['add_javascript']['formvalidation'] = array('js/formvalidation.js');
+   $plug = new Plugin;
+   if ($plug->isActivated('formvalidation')) {
+      $PLUGIN_HOOKS['add_javascript']['formvalidation'] = array('js/formvalidation.js');
+   }
 }
 
 
@@ -78,7 +85,7 @@ function plugin_init_formvalidation() {
 function plugin_version_formvalidation() {
 
    return array('name'           => 'Form Validation',
-                'version'        => '0.2.1',
+                'version'        => '0.2.2',
                 'author'         => 'Olivier Moron',
                 'license'        => 'GPLv2+',
                 'homepage'       => 'https://github.com/tomolimo/formvalidation',

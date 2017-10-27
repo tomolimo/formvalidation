@@ -22,18 +22,22 @@
       <author>Olivier Moron </author>
    </authors>
    <versions>
-		<version>
-          <num>0.2.1</num>
-          <compatibility>0.85</compatibility>
-		</version>
-		<version>
-          <num>0.2.1</num>
+      <version>
+         <num>0.2.2</num>
+         <compatibility>9.2</compatibility>
+      </version>
+      <version>
+         <num>0.2.2</num>
+         <compatibility>9.1</compatibility>
+      </version>
+      <version>
+          <num>0.2.2</num>
           <compatibility>0.90</compatibility>
 		</version>
-		<version>
-          <num>0.2.1</num>
-          <compatibility>9.1</compatibility>
-		</version>
+      <version>
+         <num>0.2.2</num>
+         <compatibility>0.85</compatibility>
+      </version>
    </versions>
    <langs>
       <lang>en_GB</lang>

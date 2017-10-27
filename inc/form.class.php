@@ -274,8 +274,13 @@ class PluginFormvalidationForm extends CommonDBTM {
          //}
          $header_end .= "<th>".__('CSS selector', 'formvalidation')."</th>";
          $header_end .= "<th>".__('Active')."</th>";
-         $header_end .= "<th>".__('Item creation', 'formvalidation')."</th><";
-         $header_end .= "<th>".__('Massive actions', 'formvalidation')."</th></tr>";
+         $header_end .= "<th>".__('Item creation', 'formvalidation')."</th>";
+         if (extension_loaded('v8js')) {
+            $header_end .= "<th>".__('Massive actions', 'formvalidation')."</th>";
+         } else {
+            $header_end .= "<th>".__('Massive actions (Not available as V8JS is not loaded)', 'formvalidation')."</th>";
+         }
+         $header_end .= "</tr>";
          echo $header_begin.$header_top.$header_end;
 
          //$tmpgrp = new PluginFormvalidationPage();
@@ -300,20 +305,18 @@ class PluginFormvalidationForm extends CommonDBTM {
             echo "</td><td >";
             echo $data['css_selector'];
             echo "</td><td class='center'>";
-            Html::showCheckbox(array( 'id'        => 'isformactive',
-                                   'name'           => 'is_active',
-                                   'checked'        => $data["is_active"],
-                                   'readonly' => true
-
-                                   ));
+            Html::showCheckbox(['id'        => 'isformactive',
+                                'name'           => 'is_active',
+                                'checked'        => $data["is_active"],
+                                'readonly' => true
+                                ]);
 
             echo "</td><td class='center'>";
-            Html::showCheckbox(array( 'id'        => 'isformitemcreation',
-                                   'name'           => 'is_createitem',
-                                   'checked'        => $data["is_createitem"],
-                                   'readonly' => true
-
-                                   ));
+            Html::showCheckbox(['id'        => 'isformitemcreation',
+                                'name'           => 'is_createitem',
+                                'checked'        => $data["is_createitem"],
+                                'readonly' => true
+                                ]);
 
             echo "</td><td class='center'>";
             Html::showCheckbox(array( 'id'        => 'isformuseformassiveaction',
@@ -402,11 +405,17 @@ class PluginFormvalidationForm extends CommonDBTM {
       echo "</tr>";
 
       echo "<tr>";
-      echo "<td >".__("Validate massive actions")."&nbsp;:</td>";
+      $v8js = extension_loaded('v8js');
+      if ($v8js) {
+         echo "<td >".__("Validate massive actions")."&nbsp;:</td>";
+      } else {
+         echo "<td >".__("Massive actions (Not available as V8JS is not loaded)")."&nbsp;:</td>";
+      }
       echo "<td>";
-      Html::showCheckbox(array('name'           => 'use_for_massiveaction',
-                         'checked'        => $this->fields["use_for_massiveaction"]
-                         ));
+      Html::showCheckbox(['name'    => 'use_for_massiveaction',
+                         'checked'  => $this->fields["use_for_massiveaction"],
+                         'readonly' => !$v8js
+                         ]);
 
       echo "</td></tr>";
 

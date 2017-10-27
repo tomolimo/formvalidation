@@ -28,7 +28,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 (function () {
    function glpiURLRoot() {
       var scriptName = "/plugins/formvalidation/js/formvalidation.js";
-      var glpiURL = $('script[src$="' + scriptName + '"]')[0].src;
+      var glpiURL = $('script[src*="' + scriptName + '"]')[0].src;
       var pos = glpiURL.search(scriptName);
 
       return glpiURL.substr(0, pos);
