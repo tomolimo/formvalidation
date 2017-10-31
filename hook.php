@@ -26,25 +26,25 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
  */
 
-if (method_exists( $DB, 'tableExists')) {
+if (!function_exists('arTableExists')) {
    function arTableExists($table) {
       global $DB;
-      return $DB->tableExists($table);
-   }
-} else {
-   function arTableExists($table) {
-      return TableExists($table);
+      if (method_exists( $DB, 'tableExists')) {
+         return $DB->tableExists($table);
+      } else {
+         return TableExists($table);
+      }
    }
 }
 
-if (method_exists( $DB, 'fieldExists')) {
+if (!function_exists('arFieldExists')) {
    function arFieldExists($table, $field, $usecache = true) {
       global $DB;
-      return $DB->fieldExists($table, $field, $usecache);
-   }
-} else {
-   function arFieldExists($table, $field, $usecache = true) {
-      return FieldExists($table, $field, $usecache);
+      if (method_exists( $DB, 'fieldExists')) {
+         return $DB->fieldExists($table, $field, $usecache);
+      } else {
+         return FieldExists($table, $field, $usecache);
+      }
    }
 }
 
