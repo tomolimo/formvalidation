@@ -19,23 +19,23 @@
    <issues>https://github.com/tomolimo/formvalidation/issues</issues>
    <readme>https://github.com/tomolimo/formvalidation/wiki</readme>
    <authors>
-      <author>Olivier Moron </author>
+      <author>Olivier Moron</author>
    </authors>
    <versions>
       <version>
-         <num>0.2.2</num>
+         <num>0.2.3</num>
          <compatibility>9.2</compatibility>
       </version>
       <version>
-         <num>0.2.2</num>
+         <num>0.2.3</num>
          <compatibility>9.1</compatibility>
       </version>
       <version>
-          <num>0.2.2</num>
+          <num>0.2.3</num>
           <compatibility>0.90</compatibility>
 		</version>
       <version>
-         <num>0.2.2</num>
+         <num>0.2.3</num>
          <compatibility>0.85</compatibility>
       </version>
    </versions>
