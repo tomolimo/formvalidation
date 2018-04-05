@@ -1,0 +1,210 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: form validation\n"
+"POT-Creation-Date: 2016-05-26 10:51+0200\n"
+"PO-Revision-Date: 2018-04-05 12:54+0200\n"
+"Last-Translator: Olivier Moron <olivier.moron@araymond.com>\n"
+"Language-Team: \n"
+"Language: cs_CZ\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.4\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: js\n"
+
+#: front/field.form.php:78
+msgid "Form Validation - Field"
+msgstr "Ověření formuláře – kolonka"
+
+#: front/field.php:5 front/form.php:5 front/page.php:5 inc/menu.class.php:6
+msgid "Form Validations"
+msgstr "Ověřování formulářů"
+
+#: front/form.form.php:68
+msgid "Form Validation - Form"
+msgstr "Ověření formuláře – formulář"
+
+#: front/page.form.php:72
+msgid "Form Validation - Page"
+msgstr "Ověření formuláře – stránka"
+
+#: inc/field.class.php:23
+msgid "Fields"
+msgstr "Kolonky"
+
+#: inc/field.class.php:25 inc/field.class.php:37
+msgid "Field"
+msgstr "Kolonka"
+
+#: inc/field.class.php:41 inc/field.class.php:323 inc/form.class.php:32
+#: inc/form.class.php:361 inc/page.class.php:113
+msgid "Name"
+msgstr "Název"
+
+#: inc/field.class.php:49 inc/field.class.php:229 inc/field.class.php:330
+#: inc/form.class.php:40 inc/form.class.php:274 inc/form.class.php:368
+#: inc/page.class.php:45 inc/page.class.php:123
+msgid "Active"
+msgstr "Aktivní"
+
+#: inc/field.class.php:55 inc/field.class.php:325 inc/form.class.php:46
+#: inc/form.class.php:363 inc/page.class.php:51 inc/page.class.php:118
+msgid "Comments"
+msgstr "Komentáře"
+
+#: inc/field.class.php:61 inc/form.class.php:52 inc/page.class.php:57
+msgid "Last update"
+msgstr "Minulá aktualizace"
+
+#: inc/field.class.php:75 inc/form.class.php:28 inc/form.class.php:74
+msgid "Form"
+msgstr "Formulář"
+
+#: inc/field.class.php:81 inc/field.class.php:340
+msgid "Value CSS selector"
+msgstr "Hodnota CSS selektoru"
+
+#: inc/field.class.php:215 inc/form.class.php:244
+#, php-format
+msgid "%1$s = %2$s"
+msgstr "%1$s = %2$s"
+
+#: inc/field.class.php:227 inc/form.class.php:268
+msgid "ID"
+msgstr "Identifikátor"
+
+#: inc/field.class.php:228
+msgid " / CSS selector"
+msgstr " / CSS selektor"
+
+#: inc/field.class.php:230 inc/field.class.php:360
+msgid "Validation formula"
+msgstr "Ověřovací vzorec"
+
+#: inc/field.class.php:231
+msgid "Force mand. sign"
+msgstr "Vynutit povinnou sign"
+
+#: inc/field.class.php:232 inc/field.class.php:372
+msgid "Mandatory sign formula"
+msgstr "Vzorec povinné sign"
+
+#: inc/field.class.php:279
+msgid "Formula guidelines"
+msgstr "Pokyny vzorce"
+
+#: inc/field.class.php:287 inc/form.class.php:329
+msgid "No item found"
+msgstr "Nenalezena žádná položka"
+
+#: inc/field.class.php:345
+msgid "Alternative value CSS selector"
+msgstr "CSS selektor alternativní hodnoty"
+
+#: inc/field.class.php:350
+msgid "Error sign CSS selector"
+msgstr "CSS selektor chybové sign"
+
+#: inc/field.class.php:355
+msgid "Mandatory sign CSS selector"
+msgstr "Mandatory sign CSS selector"
+
+#: inc/field.class.php:365
+msgid "Force mandatory sign"
+msgstr "Vynutit povinné sign"
+
+#: inc/form.class.php:59 inc/page.class.php:28 inc/page.class.php:82
+msgid "Page"
+msgstr "Stránka"
+
+#: inc/form.class.php:72
+msgid "Forms"
+msgstr "Formuláře"
+
+#: inc/form.class.php:273 inc/form.class.php:384
+msgid "CSS selector"
+msgstr "CSS "
+
+#: inc/form.class.php:275
+msgid "Item creation"
+msgstr "Vytvoření položky"
+
+#: inc/form.class.php:376
+msgid "For item creation"
+msgstr "Pro vytvoření položky"
+
+#: inc/form.class.php:389
+msgid "Formula (left empty to default to <b><i>true</i></b>)"
+msgstr "Vzorec (ponechte pro použítí výchozího <b><i>true</i></b>)"
+
+#: inc/page.class.php:32
+msgid "Title"
+msgstr "Nadpis"
+
+#: inc/page.class.php:40 inc/page.class.php:137
+msgid "Associated item type"
+msgstr "Typ související položky"
+
+#: inc/page.class.php:63
+msgid "Entity"
+msgstr "Entita"
+
+#: inc/page.class.php:69 inc/page.class.php:130
+msgid "Child entities"
+msgstr "Podřízené entity"
+
+#: inc/page.class.php:80
+msgid "Pages"
+msgstr "Stránky"
+
+#: inc/page.class.php:160
+msgid "Assets"
+msgstr "Majetky"
+
+#: inc/page.class.php:170
+msgid "Assistance"
+msgstr "Asistence"
+
+#: inc/page.class.php:173
+msgid "Recurrent tickets"
+msgstr "Opakující se požadky"
+
+#: inc/page.class.php:174
+msgid "Management"
+msgstr "Správa"
+
+#: inc/page.class.php:180
+msgid "Tools"
+msgstr "Nástroje"
+
+#: inc/page.class.php:181
+msgid "Notes"
+msgstr "Poznámky"
+
+#: inc/page.class.php:182
+msgid "RSS feed"
+msgstr "RSS zdroj"
+
+#: inc/page.class.php:183
+msgid "Administration"
+msgstr "Správa"
+
+#: inc/user.class.php:43
+msgid "Form Validation"
+msgstr "Ověřování formulárů"
+
+#: inc/user.class.php:69
+msgid "Edit mode"
+msgstr "Režim úprav"
+
+#: inc/user.class.php:72
+msgid "Edit mode (valid for current session only, will be reset at next login)"
+msgstr "Režim úprav (platné pouze pro stávající sezení, při příštím přihlášení bude resetováno)"
+
+#: inc/user.class.php:80
+msgid "Save"
+msgstr "Uložit"
