@@ -26,18 +26,21 @@ class PluginFormvalidationHook extends CommonDBTM {
 
    const HELPER_FUNCTIONS = <<<'EOT'
     //------------------------------------------
-    // helper function to verify a if a string
+    // helper function to verify if a string
     // is really a date
-    // uses the datapicker JQuery plugin
+    // uses the datepicker JQuery plugin
     //------------------------------------------
-    function isValidDate(d) {
-        try {
-            $.datepicker.parseDate($(".hasDatepicker`").datepicker("option", "dateFormat"), d)
-            return true;
-        } catch (e) {
+    function isValidDate(string) {
+      try {
+         if (string.length == 0) {
             return false;
-        }
-    }
+         }
+         $.datepicker.parseDate($('.hasDatepicker').datepicker('option', 'dateFormat'), string);
+         return true;
+      } catch (e) {
+         return false;
+      }
+   }
 
     //------------------------------------------
     // helper function to verify a if a string
@@ -117,7 +120,7 @@ EOT;
 
       // to be executed only for massive actions
       if (strstr($_SERVER['PHP_SELF'], "/front/massiveaction.php")) {
-         $ret=array();
+         $ret=[];
 
          //return;
          //clean input values
@@ -129,9 +132,9 @@ EOT;
             }
          }
          $itemvalues = array_merge( $parm->fields, $input );
-         $formulas = array();
-         $fieldnames = array();
-         $fieldtitles = array();
+         $formulas = [];
+         $fieldnames = [];
+         $fieldtitles = [];
 
          $query = "SELECT DISTINCT glpi_plugin_formvalidation_forms.* FROM glpi_plugin_formvalidation_forms
                LEFT JOIN glpi_plugin_formvalidation_fields ON glpi_plugin_formvalidation_forms.id=glpi_plugin_formvalidation_fields.forms_id
@@ -150,19 +153,19 @@ EOT;
 
          foreach ($DB->request( $query." AND ( $where )" ) as $form) {
             foreach ($DB->request("SELECT * from glpi_plugin_formvalidation_fields WHERE forms_id = ".$form['id'])  as $field) {
-               $matches = array();
-               if (preg_match('/\[(name|id\^)=\\\\{0,1}"(?<name>[a-z_\-0-9]+)\\\\{0,1}"\]/i', $field['css_selector_value'], $matches)) { 
+               $matches = [];
+               if (preg_match('/\[(name|id\^)=\\\\{0,1}"(?<name>[a-z_\-0-9]+)\\\\{0,1}"\]/i', $field['css_selector_value'], $matches)) {
                   $fieldnames[$field['id']]=$matches['name'];
                   $formulas[$field['id']]=($field['formula'] ? $field['formula'] : '#>0 || #!=""');
                   $fieldtitles[$field['id']]=$field['name'];
                }
             }
 
-            $values=array();
+            $values=[];
             foreach ($formulas as $fieldnum => $formula) {
                $values[$fieldnum] = ($itemvalues[$fieldnames[$fieldnum]] ? $itemvalues[$fieldnames[$fieldnum]] : "" );
             }
-            $formulaJS=array();
+            $formulaJS=[];
             foreach ($formulas as $fieldnum => $formula) {
                $formulaJS[$fieldnum] = $formula;
                foreach ($values as $valnum => $val) {
@@ -178,7 +181,7 @@ EOT;
 
             $v8 = new V8Js();
             $v8->val = $values;
-            $ret=array();
+            $ret=[];
             foreach ($formulaJS as $index => $formula) {
                try {
                   if (!$v8->executeString(self::HELPER_FUNCTIONS."
@@ -195,13 +198,13 @@ EOT;
          }
 
          if (count($ret) > 0) {
-            $parm->input = array(); //to prevent update of unconsistant data
+            $parm->input = []; //to prevent update of unconsistant data
          }
 
       }
    }
 
-   static public function plugin_pre_show_tab_formvalidation($parm ) {
+   static public function plugin_pre_show_tab_formvalidation($parm) {
       echo '';
    }
 

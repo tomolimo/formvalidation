@@ -81,13 +81,16 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
    }
 
     //------------------------------------------
-    // helper function to verify a if a string
+    // helper function to verify if a string
     // is really a date
-    // uses the datapicker JQuery plugin
+    // uses the datepicker JQuery plugin
     //------------------------------------------
-   function isValidDate(d) {
+   function isValidDate(string) {
       try {
-         $.datepicker.parseDate($('.hasDatepicker').datepicker('option', 'dateFormat'), d)
+         if (string.length == 0) {
+            return false;
+         }
+         $.datepicker.parseDate($('.hasDatepicker').datepicker('option', 'dateFormat'), string);
          return true;
       } catch (e) {
          return false;
@@ -162,14 +165,29 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
    function alertCallback(msg, title, okCallback) {
       // Dialog and its properties.
       $('<div></div>').dialog({
-         open: function (event, ui) { $('.ui-dialog-titlebar-close').hide(); },
-         close: function (event, ui) { $(this).remove(); $('.ui-widget-overlay.ui-front').remove(); },
+         open: function (event, ui) {
+            $(this).parent().find('.ui-dialog-titlebar-close').hide();
+            //debugger;
+            var overlay = $(this).parent().prev('.ui-widget-overlay.ui-front');
+            if (overlay.length > 0) {
+               overlay.css("z-index", $(this).parent().css('z-index') - 1);
+            }
+            // is there another overlay just before in the DOM
+            if (overlay.prev('.ui-widget-overlay.ui-front')) {
+               // remove it
+               overlay.prev('.ui-widget-overlay.ui-front').remove();
+            }
+         },
+         dialogClass: 'fv-alert',
+         closeOnEscape: false,
+         close: function (event, ui) {
+            $(this).dialog('destroy').remove();
+         },
          resizable: true,
          modal: true,
          title: title,
          buttons: {
             'Ok': function () {
-
                $(this).dialog('close');
                if (okCallback) {
                   okCallback();
@@ -179,10 +197,11 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
         }).html(msg);
    }
 
-    var ARRoot = glpiURLRoot();
-    var ARL; // to store the locale strings
-    var ARV; // to store the validation data
-    var ARVAllTabs; // to store the complete info if needed for cross form validation references
+   var ARRoot = glpiURLRoot();
+   var ARL; // to store the locale strings
+   var ARV; // to store the validation data
+   var ARVAllTabs; // to store the complete info if needed for cross form validation references
+   var editModeInstalled = false;
 
    if (location.href.indexOf('withtemplate=1') == -1) {
       (function () {
@@ -206,7 +225,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
             if (!itemtype) {
                itemtype = location.pathname.match(/front\/tracking.injector.php$/);
             }
-            if (itemtype ) {
+            if (itemtype) {
                itemtype[0] = 'selfservice';
                itemtype[1] = 'ticket';
             }
@@ -215,8 +234,16 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
          if (!itemtype) {
             itemtype = location.pathname.match(/front\/([a-z]+)\.form\.php$/);
          }
-            var items_id = location.search.match(/id=([0-9]+)/);
-            items_id = (items_id?items_id[1]:0);
+
+         var items_id = location.search.match(/id=([0-9]+)/);
+         items_id = (items_id ? items_id[1] : 0);
+
+         // Special case for Change when in Change list, or in a Ticket, or in a Problem
+         if (!itemtype) {
+            //debugger;
+            itemtype = location.pathname.match(/front\/(change)\.php$/);
+         }
+
          if (itemtype) {
             //------------------------------------------
             // ajax call to load localized string
@@ -234,20 +261,21 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                url: ARRoot + '/plugins/formvalidation/ajax/getFormValidations.php',
                data: { itemtype: itemtype.join(''), id: items_id },
                success: function (response, options) {
-                   //debugger;
-                   ARV = $.parseJSON(response);
+                  //debugger;
+                  ARV = $.parseJSON(response);
 
-                   $.each(ARV.forms, function (formIndex, formData) {
-                       $.each(formData.fields, function (fieldIndex, fieldData) {
-                           ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel = getUpDownDOMPath(fieldData.css_selector_mandatorysign, fieldData.css_selector_value);
-                           ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign_rel = getUpDownDOMPath(fieldData.css_selector_errorsign, fieldData.css_selector_value);
-                       });
-                   });
+                  $.each(ARV.forms, function (formIndex, formData) {
+                     $.each(formData.fields, function (fieldIndex, fieldData) {
+                        ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel = getUpDownDOMPath(fieldData.css_selector_mandatorysign, fieldData.css_selector_value);
+                        ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign_rel = getUpDownDOMPath(fieldData.css_selector_errorsign, fieldData.css_selector_value);
+                     });
+                  });
 
-                   $(document).ajaxComplete(installRunMode);
-
+                  $(document).ajaxComplete(installRunMode);
+                  //debugger;
                   if (ARV.config.editmode == 1 && ARV.pages_id > 0) {
-                     $(installEditMode);
+                     $(document).ajaxComplete(installEditMode);
+                     //$(installEditMode);
                   }
 
                    // TODO external fields
@@ -265,15 +293,15 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
                },
                failure: function (response, options) { /*debugger;*/ }
-                 });
+            });
          }
 
-            var myPollingIntervals = {}; // an object is better than an array when using $.each()
-            //------------------------------------------
-            // install run mode by polling the DOM for 30
-            // seconds, each time there is an completed
-            // ajax call
-            //------------------------------------------
+         var myPollingIntervals = {}; // an object is better than an array when using $.each()
+         //------------------------------------------
+         // install run mode by polling the DOM for 30
+         // seconds, each time there is an completed
+         // ajax call
+         //------------------------------------------
          function installRunMode(event, jqXHR, ajaxOptions) {
             setTimeout(stopPolling, 30000);
             $.each(ARV.forms, function (formIndex, formData) {
@@ -305,6 +333,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
             //  formData: is the ARV.forms[x] for one form
             //------------------------------------------
          function installFormValidations(formData) {
+            //debugger;
             var thisForm = $(formData.css_selector);
             if (thisForm.length > 0) {
                $.each(thisForm, function (formIndex, formObj) {
@@ -753,56 +782,56 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
          }
 
-            //---------------------------------------------------------------------------------------------------------------------------------------------------------
-            //---------------------------------------------------------------------------------------------------------------------------------------------------------
-            //---------------------------------------------------------------------------------------------------------------------------------------------------------
-            // Edit part of the module
-            //---------------------------------------------------------------------------------------------------------------------------------------------------------
+         //---------------------------------------------------------------------------------------------------------------------------------------------------------
+         //---------------------------------------------------------------------------------------------------------------------------------------------------------
+         //---------------------------------------------------------------------------------------------------------------------------------------------------------
+         // Edit part of the module
+         //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-            var BORDER_WIDTH = 6;
+         var BORDER_WIDTH = 6;
 
-            //------------------------------------------
-            // this function retreive the path of the
-            // object in parameter and return an object
-            // with .form as the selector_value for the form
-            // and .path as the focus path
-            //------------------------------------------
-            jQuery.fn.getPath = function ( complete ) {
-               if (this.length < 1) {
-                  throw 'getPath() requires at least one element.';
-               }
-               if (typeof complete === "undefined") {
-                  complete = false;
-               }
-               var path, node = (complete ? this : this.parent()); //s('td').first();
-               while (node.length) {
-                  var realNode = node[0], name = realNode.localName;
-                  if (!name) {
-                     break;
-                  }
-
-                  name = name.toLowerCase();
-
-                  if (name == 'form') {
-                     //var fieldData = '';
-                     if ($(realNode).attr('name')) {
-                        name += '[name="' + $(realNode).attr('name') + '"]';
-                     }
-
-                     return { form: name + '[action="' + $(realNode).attr('action') + '"]', path: path };
-                  }
-                  var parent = node.parent();
-
-                  var siblings = parent.children(name);
-                  if (siblings.length > 1) {
-                     name += ':eq(' + siblings.index(realNode) + ')';
-                  }
-                  path = name + (path ? '>' + path : '');
-                  node = parent;
+         //------------------------------------------
+         // this function retreive the path of the
+         // object in parameter and return an object
+         // with .form as the selector_value for the form
+         // and .path as the focus path
+         //------------------------------------------
+         jQuery.fn.getPath = function ( complete ) {
+            if (this.length < 1) {
+               throw 'getPath() requires at least one element.';
+            }
+            if (typeof complete === "undefined") {
+               complete = false;
+            }
+            var path, node = (complete ? this : this.parent()); //s('td').first();
+            while (node.length) {
+               var realNode = node[0], name = realNode.localName;
+               if (!name) {
+                  break;
                }
 
-               return { form: '', path: path };
-            };
+               name = name.toLowerCase();
+
+               if (name == 'form') {
+                  //var fieldData = '';
+                  if ($(realNode).attr('name')) {
+                     name += '[name="' + $(realNode).attr('name') + '"]';
+                  }
+
+                  return { form: name + '[action="' + $(realNode).attr('action') + '"]', path: path };
+               }
+               var parent = node.parent();
+
+               var siblings = parent.children(name);
+               if (siblings.length > 1) {
+                  name += ':eq(' + siblings.index(realNode) + ')';
+               }
+               path = name + (path ? '>' + path : '');
+               node = parent;
+            }
+
+            return { form: '', path: path };
+         };
 
          function initSignOverlay(overlayName, backgroundColor) {
              $("body").append("<div id='" + overlayName + "-top'></div>");
@@ -815,7 +844,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                  .css("background", backgroundColor)
                  .css("cursor", "pointer")
                  .css("border", "none")
-                 .css("z-index", 1001)
+                 .css("z-index", 10001)
                  .css("height", BORDER_WIDTH )
                  .css("position", "absolute")
                  .hide();
@@ -824,7 +853,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                  .css("background", backgroundColor)
                  .css("cursor", "pointer")
                  .css("border", "none")
-                 .css("z-index", 1001)
+                 .css("z-index", 10001)
                  .css("width", BORDER_WIDTH)
                  .css("position", "absolute")
                  .hide();
@@ -833,7 +862,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                  .css("background", backgroundColor)
                  .css("cursor", "pointer")
                  .css("border", "none")
-                 .css("z-index", 1001)
+                 .css("z-index", 10001)
                  .css("height", BORDER_WIDTH)
                  .css("position", "absolute")
                  .hide();
@@ -842,7 +871,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                  .css("background", backgroundColor)
                  .css("cursor", "pointer")
                  .css("border", "none")
-                 .css("z-index", 1001)
+                 .css("z-index", 10001)
                  .css("width", BORDER_WIDTH)
                  .css("position", "absolute")
                  .hide();
@@ -882,6 +911,11 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
             // install Edit mode
             //------------------------------------------
          function installEditMode() {
+            if (editModeInstalled) {
+               return;
+            }
+            editModeInstalled = true;
+
              var SELECT_DISABLE = -1;
              var SELECT_FIELD = 0;
              var SELECT_ERRORSIGN = 1;
@@ -897,7 +931,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
              // to show a message to inform that we are in edit mode
              $("body").append("<div id='message_editmode_is_on'></div>");
              $('#message_editmode_is_on').dialog({
-                  dialogClass: 'message_after_redirect',
+                  dialogClass: 'message_after_redirect fv-editmodeinfo',
                   minHeight: 10,
                   width: 'auto',
                   height: 'auto',
@@ -909,8 +943,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                   },
                   autoOpen: false,
                   create: function(event, ui) {
-                     $('.ui-dialog-titlebar', ui.dialog | ui).hide();
-                     $('.ui-dialog-titlebar-close', ui.dialog | ui).hide();
+                     $(this).parent().find('.ui-dialog-titlebar', ui.dialog | ui).hide();
+                     $(this).parent().find('.ui-dialog-titlebar-close', ui.dialog | ui).hide();
                   },
                   show: {
                      effect: 'slide',
@@ -1219,7 +1253,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                      $("#field-overlay")
                         .css("left", field.jq_focus_elt.offset().left)
                         .css("top", field.jq_focus_elt.offset().top)
-                        .css("z-index", 1000)
+                        .css("z-index", 10000)
                         .width(field.jq_focus_elt.outerWidth())
                         .height(field.jq_focus_elt.outerHeight())
                         .show();

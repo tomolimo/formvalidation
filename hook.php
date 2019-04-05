@@ -26,53 +26,37 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
  */
 
-if (!function_exists('arTableExists')) {
-   function arTableExists($table) {
-      global $DB;
-      if (method_exists( $DB, 'tableExists')) {
-         return $DB->tableExists($table);
-      } else {
-         return TableExists($table);
-      }
-   }
-}
-
-if (!function_exists('arFieldExists')) {
-   function arFieldExists($table, $field, $usecache = true) {
-      global $DB;
-      if (method_exists( $DB, 'fieldExists')) {
-         return $DB->fieldExists($table, $field, $usecache);
-      } else {
-         return FieldExists($table, $field, $usecache);
-      }
-   }
-}
-
 /**
  * Summary of plugin_formvalidation_install
  * @return boolean
  */
 function plugin_formvalidation_install() {
    global $DB;
+   $dbu = new DbUtils();
 
-   if (!arTableExists("glpi_plugin_formvalidation_configs")) {
-        $query = "CREATE TABLE `glpi_plugin_formvalidation_configs` (
+   if (!$DB->tableExists("glpi_plugin_formvalidation_configs")) {
+      $query = "CREATE TABLE `glpi_plugin_formvalidation_configs` (
 	                  `id` INT(11) NOT NULL AUTO_INCREMENT,
 	                  `css_mandatory` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\":\"lightgrey\", \"font-weight\":\"bold\"}',
-                     `css_error` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\": \"red\"}',
+                     `css_error` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\": \"red\"}',                     
                   PRIMARY KEY (`id`)
                   )
                   ENGINE=InnoDB
                   ;
 			";
 
-        $DB->query($query) or die("Error creating glpi_plugin_formvalidation_configs " . $DB->error());
-
-      $query = "INSERT INTO `glpi_plugin_formvalidation_configs` (`id`) VALUES (1);";
-      $DB->query($query) or die("Error inserting default config into glpi_plugin_formvalidation_configs " . $DB->error());
+      $DB->query($query) or die("Error creating glpi_plugin_formvalidation_configs " . $DB->error());
+      $DB->insertOrDie(
+         'glpi_plugin_formvalidation_configs', [
+            'id'      => '1',            
+         ],
+         "Error inserting default config into glpi_plugin_formvalidation_configs "
+      );
+//      $query = "INSERT INTO `glpi_plugin_formvalidation_configs` (`id`) VALUES (1);";
+//      $DB->query($query) or die("Error inserting default config into glpi_plugin_formvalidation_configs " . $DB->error());
    }
 
-   if (!arTableExists("glpi_plugin_formvalidation_itemtypes")) {
+   if (!$DB->tableExists("glpi_plugin_formvalidation_itemtypes")) {
         $query = "CREATE TABLE `glpi_plugin_formvalidation_itemtypes` (
 	                  `id` INT(11) NOT NULL AUTO_INCREMENT,
 	                  `name` VARCHAR(255) NOT NULL,
@@ -123,7 +107,7 @@ function plugin_formvalidation_install() {
 
    }
 
-   if (!arTableExists("glpi_plugin_formvalidation_pages")) {
+   if (!$DB->tableExists("glpi_plugin_formvalidation_pages")) {
         $query = "CREATE TABLE `glpi_plugin_formvalidation_pages` (
 	                  `id` INT(11) NOT NULL AUTO_INCREMENT,
 	                  `name` VARCHAR(200) NULL DEFAULT NULL,
@@ -153,7 +137,7 @@ function plugin_formvalidation_install() {
       $DB->query($query) or die("Error inserting default pages into glpi_plugin_formvalidation_pages " . $DB->error());
 
    } else {
-      if (!arFieldExists('glpi_plugin_formvalidation_pages', 'itemtypes_id')) {
+      if (!$DB->fieldExists('glpi_plugin_formvalidation_pages', 'itemtypes_id')) {
          $query = "ALTER TABLE `glpi_plugin_formvalidation_pages`
 	                  ADD COLUMN `itemtypes_id` INT(11) NOT NULL DEFAULT '0' AFTER `itemtype`,
                      ADD INDEX `itemtypes_id` (`itemtypes_id`);
@@ -162,7 +146,7 @@ function plugin_formvalidation_install() {
       }
 
       // check if migration is neccessary
-      $pages = getAllDatasFromTable('glpi_plugin_formvalidation_pages', 'itemtypes_id = 0');
+      $pages = $dbu->getAllDataFromTable('glpi_plugin_formvalidation_pages', ['itemtypes_id' => '0']);
       if (count($pages)) {
          // migration of itemtype into itemtypes_id
          $query = "UPDATE glpi_plugin_formvalidation_pages AS gpfp, glpi_plugin_formvalidation_itemtypes AS gpfi
@@ -171,7 +155,7 @@ function plugin_formvalidation_install() {
          $DB->query($query) or die("Error migrating itemtype into itemtypes_id field in glpi_plugin_formvalidation_pages " . $DB->error());
 
          // check if all pages have been migrated
-         $pages = getAllDatasFromTable('glpi_plugin_formvalidation_pages', 'itemtypes_id = 0');
+         $pages = $dbu->getAllDataFromTable('glpi_plugin_formvalidation_pages', ['itemtypes_id' => '0']);
          if (count($pages)) {
             die("Error some itemtype can't be migrated into itemtypes_id field from glpi_plugin_formvalidation_pages, </br>
                  please check the list of itemtype in glpi_plugin_formvalidation_pages and in glpi_plugin_formvalidation_itemtypes,</br>
@@ -179,7 +163,7 @@ function plugin_formvalidation_install() {
          }
       }
 
-      if (arFieldExists('glpi_plugin_formvalidation_pages', 'itemtype') && !count($pages)) {
+      if ($DB->fieldExists('glpi_plugin_formvalidation_pages', 'itemtype') && !count($pages)) {
          // delete itemtype field after migration is done
          $query = "ALTER TABLE `glpi_plugin_formvalidation_pages`
                    DROP COLUMN `itemtype`,
@@ -195,7 +179,7 @@ function plugin_formvalidation_install() {
       }
    }
 
-   if (!arTableExists("glpi_plugin_formvalidation_forms")) {
+   if (!$DB->tableExists("glpi_plugin_formvalidation_forms")) {
         $query = "CREATE TABLE `glpi_plugin_formvalidation_forms` (
 	                  `id` INT(11) NOT NULL AUTO_INCREMENT,
 	                  `name` VARCHAR(200) NULL DEFAULT NULL,
@@ -230,7 +214,7 @@ function plugin_formvalidation_install() {
       $DB->query($query) or die("Error inserting default data into glpi_plugin_formvalidation_forms " . $DB->error());
 
    } else {
-      if (!arFieldExists('glpi_plugin_formvalidation_forms', 'use_for_massiveaction')) {
+      if (!$DB->fieldExists('glpi_plugin_formvalidation_forms', 'use_for_massiveaction')) {
          $query = "ALTER TABLE `glpi_plugin_formvalidation_forms`
 	                  ADD COLUMN `use_for_massiveaction` TINYINT(1) NOT NULL DEFAULT '0' AFTER `is_active`;
                   ";
@@ -238,7 +222,7 @@ function plugin_formvalidation_install() {
       }
    }
 
-   if (!arTableExists("glpi_plugin_formvalidation_fields")) {
+   if (!$DB->tableExists("glpi_plugin_formvalidation_fields")) {
         $query = "CREATE TABLE `glpi_plugin_formvalidation_fields` (
 	                  `id` INT(11) NOT NULL AUTO_INCREMENT,
 	                  `name` VARCHAR(200) NULL DEFAULT NULL,

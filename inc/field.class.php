@@ -18,14 +18,18 @@ class PluginFormvalidationField extends CommonDBTM {
     * Summary of $rightname
     * @var string is the right name for this class
     */
-   static $rightname = 'entity';
+   static $rightname = 'config';
+
+   static function canPurge(){
+      return Config::canUpdate();
+   }
 
    /**
     * Summary of getTypeName
     * @param mixed $nb plural
     * @return string translation
     */
-   static function getTypeName($nb=0) {
+   static function getTypeName($nb = 0) {
         global $LANG;
 
       if ($nb>1) {
@@ -41,7 +45,7 @@ class PluginFormvalidationField extends CommonDBTM {
    function getSearchOptions() {
       global $LANG;
 
-      $tab = array();
+      $tab = [];
 
       $tab['common'] = __('Field', 'formvalidation');
 
@@ -98,14 +102,15 @@ class PluginFormvalidationField extends CommonDBTM {
     * @param mixed      $withtemplate
     * @return array|string
     */
-   function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
+   function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
 
       if (static::canView()) {
          $nb = 0;
+         $dbu = new DbUtils();
          switch ($item->getType()) {
             case 'PluginFormvalidationForm' :
                if ($_SESSION['glpishow_count_on_tabs']) {
-                  $nb = countElementsInTable('glpi_plugin_formvalidation_fields',
+                  $nb = $dbu->countElementsInTable('glpi_plugin_formvalidation_fields',
                                              "`forms_id` = '".$item->getID()."'");
                }
                return self::createTabEntry(PluginFormvalidationField::getTypeName(Session::getPluralNumber()), $nb);
@@ -131,7 +136,7 @@ class PluginFormvalidationField extends CommonDBTM {
     * @param mixed      $withtemplate
     * @return boolean
     */
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
+   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
 
       self::showForForm($item);
 
@@ -148,7 +153,7 @@ class PluginFormvalidationField extends CommonDBTM {
     * @param mixed                    $tree
     * @return mixed
     */
-   static function getDataForForm(PluginFormvalidationForm $form, &$members, &$ids, $crit='', $tree=0) {
+   static function getDataForForm(PluginFormvalidationForm $form, &$members, &$ids, $crit = '', $tree = 0) {
       global $DB;
 
       $entityrestrict = 0;
@@ -210,8 +215,8 @@ class PluginFormvalidationField extends CommonDBTM {
       $canedit = self::canUpdate();
       $rand    = mt_rand();
       $field    = new PluginFormvalidationField();
-      $used    = array();
-      $ids     = array();
+      $used    = [];
+      $ids     = [];
 
       // Retrieve member list
       $entityrestrict = self::getDataForForm($form, $used, $ids);
@@ -264,17 +269,17 @@ class PluginFormvalidationField extends CommonDBTM {
             echo "</td><td width='10%'>".$field->getLink();
 
             echo "</td><td class='center'>";
-            Html::showCheckbox(array('name'           => 'is_active_'.$data['id'],
+            Html::showCheckbox(['name'           => 'is_active_'.$data['id'],
                                      'checked'        => $data['is_active']
-                                     ));
+                                     ]);
 
             echo "</td><td class='center' width='40%'>";
             echo "<input type='text' size='60' maxlength=1000 name='formula_".$data['id']."' value='".htmlentities($data['formula'], ENT_QUOTES)."'>";
 
             echo "</td><td class='center'>";
-            Html::showCheckbox(array('name'           => 'show_mandatory_'.$data['id'],
+            Html::showCheckbox(['name'           => 'show_mandatory_'.$data['id'],
                                     'checked'        => $data['show_mandatory']
-                                    ));
+                                    ]);
             echo "</td><td class='center' width='40%'>";
             echo "<input type='text' size='40' maxlength=1000 name='show_mandatory_if_".$data['id']."' value='".htmlentities($data['show_mandatory_if'], ENT_QUOTES)."'>";
             echo "</td></tr>";
@@ -284,7 +289,7 @@ class PluginFormvalidationField extends CommonDBTM {
 
          if ($canedit) {
             echo "<br>";
-            echo Html::submit(_x('button', 'Save'), array('name' => 'update'));
+            echo Html::submit(_x('button', 'Save'), ['name' => 'update']);
          }
 
          echo "</div>";
@@ -309,10 +314,10 @@ class PluginFormvalidationField extends CommonDBTM {
     * @param mixed $options
     * @return array
     */
-   function defineTabs($options=array()) {
+   function defineTabs($options = []) {
 
       //        $ong = array('empty' => $this->getTypeName(1));
-        $ong = array();
+        $ong = [];
         $this->addDefaultFormTab($ong);
         //$this->addStandardTab(__CLASS__, $ong, $options);
 
@@ -327,7 +332,7 @@ class PluginFormvalidationField extends CommonDBTM {
     * @param mixed $ID
     * @param mixed $options
     */
-   function showForm ($ID, $options=array('candel'=>false)) {
+   function showForm ($ID, $options = ['candel'=>false]) {
       global $DB, $CFG_GLPI, $LANG;
 
       if ($ID > 0) {
@@ -354,9 +359,9 @@ class PluginFormvalidationField extends CommonDBTM {
       echo "<tr class='tab_bg_1'>";
       echo "<td >".__("Active")."&nbsp;:</td>";
       echo "<td>";
-      Html::showCheckbox(array('name'           => 'is_active',
+      Html::showCheckbox(['name'           => 'is_active',
                                    'checked'        => $this->fields['is_active']
-                                   ));
+                                   ]);
       echo "</td></tr>";
 
       echo "</td></tr>";
@@ -379,9 +384,9 @@ class PluginFormvalidationField extends CommonDBTM {
       echo "<tr class='tab_bg_1'>";
       echo "<td >".__("Force mandatory sign", 'formvalidation')."&nbsp;:</td>";
       echo "<td>";
-      Html::showCheckbox(array('name'           => 'show_mandatory',
+      Html::showCheckbox(['name'           => 'show_mandatory',
                                   'checked'        => $this->fields["show_mandatory"]
-                                  ));
+                                  ]);
 
       echo "<tr class='tab_bg_1'>";
       echo "<td >".__("Mandatory sign formula", 'formvalidation')."&nbsp;:</td>";

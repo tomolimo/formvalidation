@@ -31,6 +31,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Original Author of file: Olivier Moron
 // ----------------------------------------------------------------------
 
+define ("PLUGIN_FORMVALIDATION_VERSION", "0.4.4");
+
 /**
  * Summary of plugin_init_formvalidation
  * @return mixed
@@ -47,10 +49,10 @@ function plugin_init_formvalidation() {
 
    if (Config::canUpdate()) {
       Plugin::registerClass('PluginFormvalidationUser',
-                         array('addtabon'                    => array('Preference', 'User')));
+                         ['addtabon'                    => ['Preference', 'User']]);
 
       // Display a menu entry
-      $PLUGIN_HOOKS['menu_toadd']['formvalidation'] = array('config' => 'PluginFormvalidationMenu');
+      $PLUGIN_HOOKS['menu_toadd']['formvalidation'] = ['config' => 'PluginFormvalidationMenu'];
    }
 
    //$PLUGIN_HOOKS['pre_item_add']['formvalidation'] = array(
@@ -60,20 +62,21 @@ function plugin_init_formvalidation() {
    if (extension_loaded('v8js')) {
       // used only for validation of massiveactions
       // can only be done with v8js module
-      $PLUGIN_HOOKS['pre_item_update']['formvalidation'] = array(
-                 'Ticket' => array('PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'),
-                 'Computer' => array('PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation')
-             );
+      $PLUGIN_HOOKS['pre_item_update']['formvalidation'] = [
+                 'Ticket' => ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'],
+                 'Computer' => ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation']
+             ];
    }
 
-   $PLUGIN_HOOKS['pre_show_item']['formvalidation'] = array('PluginFormvalidationHook', 'plugin_pre_show_tab_formvalidation');
+   $PLUGIN_HOOKS['pre_show_item']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_pre_show_tab_formvalidation'];
 
-   $PLUGIN_HOOKS['post_item_form']['formvalidation'] = array('PluginFormvalidationHook', 'plugin_post_item_form_formvalidation');
+   $PLUGIN_HOOKS['post_item_form']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_post_item_form_formvalidation'];
 
    // Add specific files to add to the header : javascript or css
    $plug = new Plugin;
    if ($plug->isActivated('formvalidation')) {
-      $PLUGIN_HOOKS['add_javascript']['formvalidation'] = array('js/formvalidation.js');
+      $PLUGIN_HOOKS['add_javascript']['formvalidation'] = ['js/formvalidation.js'];
+      $PLUGIN_HOOKS['add_css']['formvalidation'] = ['css/formvalidation.css'];
    }
 }
 
@@ -84,12 +87,15 @@ function plugin_init_formvalidation() {
  */
 function plugin_version_formvalidation() {
 
-   return array('name'           => 'Form Validation',
-                'version'        => '0.2.3',
-                'author'         => 'Olivier Moron',
-                'license'        => 'GPLv2+',
-                'homepage'       => 'https://github.com/tomolimo/formvalidation',
-                'minGlpiVersion' => '0.85');
+   return ['name'           => 'Form Validation',
+                 'version'        => PLUGIN_FORMVALIDATION_VERSION,
+                 'author'         => 'Olivier Moron',
+                 'license'        => 'GPLv2+',
+                 'homepage'       => 'https://github.com/tomolimo/formvalidation',
+                 'minGlpiVersion' => '9.2',
+                  'requirements'   => ['glpi' => ['min' => '9.2',
+                                           'max' => '9.3']]
+                                           ];
 }
 
 
@@ -100,8 +106,8 @@ function plugin_version_formvalidation() {
  */
 function plugin_formvalidation_check_prerequisites() {
 
-   if (version_compare(GLPI_VERSION, '0.85', 'lt')) {
-      echo "This plugin requires GLPI >= 0.85";
+   if (version_compare(GLPI_VERSION, '9.2', 'lt')) {
+      echo "This plugin requires GLPI >= 9.2";
       return false;
    }
    return true;
@@ -115,7 +121,7 @@ function plugin_formvalidation_check_prerequisites() {
  * @param mixed $verbose not used
  * @return boolean
  */
-function plugin_formvalidation_check_config($verbose=false) {
+function plugin_formvalidation_check_config($verbose = false) {
 
    return true;
 }

@@ -14,7 +14,11 @@ if (!defined('GLPI_ROOT')) {
  */
 class PluginFormvalidationForm extends CommonDBTM {
 
-   static $rightname = 'entity';
+   static $rightname = 'config';
+
+   static function canPurge(){
+      return Config::canUpdate();
+   }
 
     /**
      * Summary of getSearchOptions
@@ -23,7 +27,7 @@ class PluginFormvalidationForm extends CommonDBTM {
    function getSearchOptions() {
       global $LANG;
 
-      $tab = array();
+      $tab = [];
 
       $tab['common'] = __('Form', 'formvalidation');
 
@@ -65,7 +69,7 @@ class PluginFormvalidationForm extends CommonDBTM {
 
 
 
-   static function getTypeName($nb=0) {
+   static function getTypeName($nb = 0) {
       global $LANG;
 
       if ($nb>1) {
@@ -80,15 +84,16 @@ class PluginFormvalidationForm extends CommonDBTM {
      *
      * @see CommonGLPI::getTabNameForItem()
      **/
-   function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
+   function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
 
       if (static::canView()) {
          $nb = 0;
+         $dbu = new DbUtils();
          switch ($item->getType()) {
             case 'PluginFormvalidationPage' :
                if ($_SESSION['glpishow_count_on_tabs']) {
-                  $nb = countElementsInTable('glpi_plugin_formvalidation_forms',
-                                             "`pages_id` = '".$item->getID()."'");
+                  $nb = $dbu->countElementsInTable('glpi_plugin_formvalidation_forms',
+                                             ['pages_id' => $item->getID()]);
                }
                return self::createTabEntry(PluginFormvalidationForm::getTypeName(Session::getPluralNumber()), $nb);
 
@@ -107,7 +112,7 @@ class PluginFormvalidationForm extends CommonDBTM {
     /**
      * @since version 0.85
      **/
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
+   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
 
       self::showForPage($item);
 
@@ -124,7 +129,7 @@ class PluginFormvalidationForm extends CommonDBTM {
      * @param mixed                    $tree
      * @return mixed
      */
-   static function getDataForPage(PluginFormvalidationPage $page, &$members, &$ids, $crit='', $tree=0) {
+   static function getDataForPage(PluginFormvalidationPage $page, &$members, &$ids, $crit = '', $tree = 0) {
       global $DB;
 
       // Entity restriction for this group, according to user allowed entities
@@ -198,8 +203,8 @@ class PluginFormvalidationForm extends CommonDBTM {
       $form    = new PluginFormvalidationForm();
       $crit    = Session::getSavedOption(__CLASS__, 'criterion', '');
       $tree    = Session::getSavedOption(__CLASS__, 'tree', 0);
-      $used    = array();
-      $ids     = array();
+      $used    = [];
+      $ids     = [];
 
       // Retrieve member list
       $entityrestrict = self::getDataForPage($page, $used, $ids, $crit, $tree);
@@ -248,9 +253,9 @@ class PluginFormvalidationForm extends CommonDBTM {
 
          if ($canedit) {
             Html::openMassiveActionsForm('mass'.__CLASS__.$rand);
-            $massiveactionparams = array('num_displayed'    => min($number-$start,
+            $massiveactionparams = ['num_displayed'    => min($number-$start,
                                                                   $_SESSION['glpilist_limit']),
-                                        'container'        => 'mass'.__CLASS__.$rand);
+                                        'container'        => 'mass'.__CLASS__.$rand];
             Html::showMassiveActions($massiveactionparams);
          }
 
@@ -319,12 +324,12 @@ class PluginFormvalidationForm extends CommonDBTM {
                                 ]);
 
             echo "</td><td class='center'>";
-            Html::showCheckbox(array( 'id'        => 'isformuseformassiveaction',
+            Html::showCheckbox([ 'id'        => 'isformuseformassiveaction',
                                    'name'           => 'use_for_massiveaction',
                                    'checked'        => $data["use_for_massiveaction"],
                                    'readonly' => true
 
-                                   ));
+                                   ]);
 
             echo "</td></tr>";
          }
@@ -344,10 +349,10 @@ class PluginFormvalidationForm extends CommonDBTM {
       }
    }
 
-   function defineTabs($options=array()) {
+   function defineTabs($options = []) {
 
       //        $ong = array('empty' => $this->getTypeName(1));
-      $ong = array();
+      $ong = [];
       $this->addDefaultFormTab($ong);
       //$this->addStandardTab(__CLASS__, $ong, $options);
 
@@ -357,7 +362,7 @@ class PluginFormvalidationForm extends CommonDBTM {
       return $ong;
    }
 
-   function showForm ($ID, $options=array('candel'=>false)) {
+   function showForm ($ID, $options = ['candel'=>false]) {
       global $DB, $CFG_GLPI, $LANG;
 
       if ($ID > 0) {
@@ -381,17 +386,17 @@ class PluginFormvalidationForm extends CommonDBTM {
       echo "<tr class='tab_bg_1'>";
       echo "<td >".__("Active")."&nbsp;:</td>";
       echo "<td>";
-      Html::showCheckbox(array('name'           => 'is_active',
+      Html::showCheckbox(['name'           => 'is_active',
                                'checked'        => $this->fields["is_active"]
-                               ));
+                               ]);
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_1'>";
       echo "<td >".__("For item creation")."&nbsp;:</td>";
       echo "<td>";
-      Html::showCheckbox(array('name'           => 'is_createitem',
+      Html::showCheckbox(['name'           => 'is_createitem',
                                'checked'        => $this->fields["is_createitem"]
-                               ));
+                               ]);
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_1'>";

@@ -56,7 +56,7 @@ if (isset($_REQUEST['action'])) {
                // extract default form name from form_css_selector
                $name = '';
                $action = '';
-               $matches = array();
+               $matches = [];
                $regex = "/form(\\[name=\\\"(?'name'\\w*)\\\"])?\\[action=\\\"(?'action'[\\w\\/\\.]*)\\\"]/";
                if (preg_match( $regex, str_replace("\\", "", html_entity_decode($_REQUEST['form_css_selector'])), $matches )) {
                   if (isset($matches['name'] )) {
@@ -81,12 +81,12 @@ if (isset($_REQUEST['action'])) {
 
             if ($DB->query( $query )) {
                $_REQUEST['fieldindex'] = $DB->insert_id();
-               $ret = array( 'forms' => array( ) ); // by default
+               $ret = [ 'forms' => [ ] ]; // by default
                $query = "SELECT * FROM glpi_plugin_formvalidation_forms WHERE id = ".$_REQUEST['formindex'];
                foreach ($DB->request( $query ) as $form) {
                   $ret['forms_id'] = $form['id'];
                   $ret['forms'][$form['id']]=Toolbox::stripslashes_deep( $form );
-                  $ret['forms'][$form['id']]['fields'] = array(); // needed in case this form has no fields
+                  $ret['forms'][$form['id']]['fields'] = []; // needed in case this form has no fields
                   $query = "SELECT * FROM glpi_plugin_formvalidation_fields WHERE id = ".$_REQUEST['fieldindex'];
                   foreach ($DB->request( $query ) as $field) {
                      $ret['fields_id']=$field['id'];

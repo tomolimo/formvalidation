@@ -14,7 +14,11 @@ if (!defined('GLPI_ROOT')) {
  */
 class PluginFormvalidationPage extends CommonDBTM {
 
-   static $rightname = 'entity';
+   static $rightname = 'config';
+
+   static function canPurge(){
+      return Config::canUpdate();
+   }
 
     /**
      * Summary of getSearchOptions
@@ -23,7 +27,7 @@ class PluginFormvalidationPage extends CommonDBTM {
    function getSearchOptions() {
       // global $LANG;
 
-      $tab = array();
+      $tab = [];
 
       $tab['common'] = __('Page', 'formvalidation');
 
@@ -75,7 +79,7 @@ class PluginFormvalidationPage extends CommonDBTM {
    }
 
 
-   static function getTypeName($nb=0) {
+   static function getTypeName($nb = 0) {
       global $LANG;
 
       if ($nb>1) {
@@ -84,10 +88,10 @@ class PluginFormvalidationPage extends CommonDBTM {
       return __('Page', 'formvalidation');
    }
 
-   function defineTabs($options=array()) {
+   function defineTabs($options = []) {
 
       //        $ong = array('empty' => $this->getTypeName(1));
-      $ong = array();
+      $ong = [];
       $this->addDefaultFormTab($ong);
       //$this->addStandardTab(__CLASS__, $ong, $options);
 
@@ -97,7 +101,7 @@ class PluginFormvalidationPage extends CommonDBTM {
       return $ong;
    }
 
-   function showForm ($ID, $options=array('candel'=>false)) {
+   function showForm ($ID, $options = ['candel'=>false]) {
       //global $DB;
 
       if ($ID > 0) {
@@ -123,17 +127,17 @@ class PluginFormvalidationPage extends CommonDBTM {
 
       echo "<tr class='tab_bg_1'>";
       echo "<td >".__("Active")."&nbsp;:</td><td>";
-      Html::showCheckbox(array('name'           => 'is_active',
+      Html::showCheckbox(['name'           => 'is_active',
                                   'checked'        => $this->fields["is_active"]
-                                  ));
+                                  ]);
       echo "</td></tr>";
 
       if (version_compare(GLPI_VERSION, '9.1', 'lt')) {
          echo "<tr class='tab_bg_1'>";
          echo "<td >".__("Child entities")."&nbsp;:</td><td>";
-         Html::showCheckbox(array('name'           => 'is_recursive',
+         Html::showCheckbox(['name'           => 'is_recursive',
                                       'checked'        => $this->fields["is_recursive"]
-                                      ));
+                                      ]);
          echo "</td></tr>";
       }
 
@@ -143,7 +147,7 @@ class PluginFormvalidationPage extends CommonDBTM {
       if ($ID > 0) {
          echo Dropdown::getDropdownName('glpi_plugin_formvalidation_itemtypes', $this->fields["itemtypes_id"]);
       } else {
-         Dropdown::show('PluginFormvalidationItemtype', array( 'name' => 'itemtypes_id' )); //, array( 'name' => 'name')
+         Dropdown::show('PluginFormvalidationItemtype', [ 'name' => 'itemtypes_id' ]); //, array( 'name' => 'name')
       }
       echo "</td>";
       echo "</tr>";

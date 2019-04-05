@@ -7,13 +7,13 @@
    <description>
       <short>
 	 <cs><![CDATA[Poskytuje ověřování formuláře při vyplňování přímo v prohlížeči.]]></cs>
+         <fr><![CDATA[Permet la validation des formulaires pendant la saisie directement dans le navigateur.]]></fr>
          <en><![CDATA[Provides form validation during input directly in browser.]]></en>
-	 <fr><![CDATA[Permet la validation des formulaires pendant la saisie directement dans le navigateur.]]></fr>
       </short>
       <long>
 	 <cs><![CDATA[Poskytuje grafické rozhraní pro výběr kolonek, jehož obsah je třeba ověřovat.]]></cs>
-	 <en><![CDATA[Provides a graphical interface to select fields that need to be validated.]]></en>
          <fr><![CDATA[Fournit une interface graphique permettant de selectionner les champs qui seront à valider.]]></fr>
+         <en><![CDATA[Provides a graphical interface to select fields that need to be validated.]]></en>
       </long>
    </description>
    <homepage>https://github.com/tomolimo/formvalidation</homepage>
@@ -21,11 +21,11 @@
    <issues>https://github.com/tomolimo/formvalidation/issues</issues>
    <readme>https://github.com/tomolimo/formvalidation/wiki</readme>
    <authors>
-      <author>Olivier Moron</author>
+      <author>Olivier Moron </author>
    </authors>
    <versions>
       <version>
-         <num>0.2.3</num>
+         <num>0.4.4</num>
          <compatibility>9.2</compatibility>
       </version>
       <version>
@@ -54,17 +54,17 @@
             <tag>Ověřování</tag>
             <tag>Ověřování formuláře</tag>
          </cs>
-	 <en>
-            <tag>Helpdesk</tag>
-			<tag>Form</tag>
-			<tag>Validation</tag>
-			<tag>Form Validation</tag>
-         </en>
          <fr>
             <tag>Helpdesk</tag>
 			<tag>Formulaire</tag>
 			<tag>Validation</tag>
 			<tag>Validation Formulaire</tag>
          </fr>
+         <en>
+            <tag>Helpdesk</tag>
+			<tag>Form</tag>
+			<tag>Validation</tag>
+			<tag>Form Validation</tag>
+         </en>
    </tags>
 </root>

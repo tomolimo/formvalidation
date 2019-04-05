@@ -28,7 +28,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
 class PluginFormvalidationConfig extends CommonDBTM {
 
-   static private $_instance = NULL;
+   static private $_instance = null;
 
    /**
     * Singleton for the unique config record

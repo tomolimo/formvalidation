@@ -55,7 +55,7 @@ if (isset($_POST["purge"])) {
    if (!isset( $_POST['id'] )) {
       // then we have an array of input to update
       foreach ($_POST as $key => $val) {
-         $match = array();
+         $match = [];
          if (preg_match( "/^formula_(\\d+)$/", $key, $match )) {
             $ID = $match[1];
             $field->check($ID, UPDATE);
@@ -64,7 +64,7 @@ if (isset($_POST["purge"])) {
             $formula = ($formula===''?'NULL':$formula);
 
             $_POST["show_mandatory_if_$ID"] = Html::entity_decode_deep( $_POST["show_mandatory_if_$ID"] );
-            $post = array( 'id' => $ID, 'formula' => $formula, 'is_active' => $_POST["is_active_$ID"], 'show_mandatory' => $_POST["show_mandatory_$ID"], 'show_mandatory_if' => $_POST["show_mandatory_if_$ID"] );
+            $post = [ 'id' => $ID, 'formula' => $formula, 'is_active' => $_POST["is_active_$ID"], 'show_mandatory' => $_POST["show_mandatory_$ID"], 'show_mandatory_if' => $_POST["show_mandatory_if_$ID"] ];
             $field->update($post);
          }
       }

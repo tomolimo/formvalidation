@@ -1,6 +1,6 @@
 <?php
 class PluginFormvalidationMenu extends CommonGLPI {
-   static $rightname = 'entity';
+   static $rightname = 'config';
 
    static function getMenuName() {
       return __("Form Validations", "formvalidation");
@@ -8,18 +8,18 @@ class PluginFormvalidationMenu extends CommonGLPI {
 
    static function getMenuContent() {
 
-      if (!Session::haveRight('entity', READ)) {
+      if (!Session::haveRight(self::$rightname, READ)) {
          return;
       }
 
       $front_page = "/plugins/formvalidation/front";
-      $menu = array();
+      $menu = [];
       $menu['title'] = self::getMenuName();
       $menu['page']  = "$front_page/page.php";
 
-      $itemtypes = array('PluginFormvalidationPage' => 'formvalidationpage',
+      $itemtypes = ['PluginFormvalidationPage' => 'formvalidationpage',
                          'PluginFormvalidationForm' => 'formvalidationform',
-                         'PluginFormvalidationField' => 'formvalidationfield');
+                         'PluginFormvalidationField' => 'formvalidationfield'];
 
       foreach ($itemtypes as $itemtype => $option) {
          $menu['options'][$option]['title']           = $itemtype::getTypeName(Session::getPluralNumber());

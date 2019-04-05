@@ -37,7 +37,7 @@ Session::checkLoginUser();
 
 $config = PluginFormvalidationConfig::getInstance();
 
-$validations = array( 'config' => $config->fields, 'pages_id' => 0, 'forms' => array( ) ); // by default
+$validations = [ 'config' => $config->fields, 'pages_id' => 0, 'forms' => [ ] ]; // by default
 
 // from user session
 $validations['config']['editmode']=$_SESSION['glpiformvalidationeditmode'];
@@ -70,7 +70,7 @@ if ($obj) {
 
       foreach ($DB->request( $query ) as $form) {
          $validations['forms'][$form['id']]= Toolbox::stripslashes_deep( $form );
-         $validations['forms'][$form['id']]['fields'] = array(); // needed in case this form has no fields
+         $validations['forms'][$form['id']]['fields'] = []; // needed in case this form has no fields
 
          $query = "SELECT * FROM glpi_plugin_formvalidation_fields WHERE forms_id = ".$form['id'];
          foreach ($DB->request( $query ) as $field) {

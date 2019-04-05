@@ -38,3 +38,6 @@ $LANG['plugin_formvalidation']['formulaerror']="Contactez votre administrateur :
 // where field_id is the id of the field
 // where your_text is the validation error message you want to show when validation formula is false for the field with field_id
 
+$LANG['plugin_formvalidation']['forms'][4][4][10]="La description doit être au moins de 10 caractères et 5 mots.";
+$LANG['plugin_formvalidation']['forms'][4][5][12]="La description doit être au moins de 10 caractères et 3 mots.";
+$LANG['plugin_formvalidation']['forms'][4][6][14]="La description doit être au moins de 10 caractères et 5 mots.";

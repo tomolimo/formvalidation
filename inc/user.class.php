@@ -37,16 +37,16 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 class PluginFormvalidationUser extends CommonDBTM
 {
 
-   function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
+   function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
       global $LANG;
 
-      return array( 'formvalidationformvalidation' => __('Form Validation', 'formvalidation') );
+      return [ 'formvalidationformvalidation' => __('Form Validation', 'formvalidation') ];
 
    }
 
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
+   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
 
-      if (in_array( $item->getType(), array( 'Preference', 'User' ))) {
+      if (in_array( $item->getType(), [ 'Preference', 'User' ])) {
          $pref = new self();
          $user_id = ($item->getType()=='Preference'?Session::getLoginUserID():$item->getID());
          $pref->showForm($user_id);
@@ -54,7 +54,7 @@ class PluginFormvalidationUser extends CommonDBTM
       return true;
    }
 
-   function showForm($user_id, $options=array()) {
+   function showForm($user_id, $options = []) {
       global $LANG;
 
       $target = $this->getFormURL();
