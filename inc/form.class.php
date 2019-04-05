@@ -21,48 +21,64 @@ class PluginFormvalidationForm extends CommonDBTM {
    }
 
     /**
-     * Summary of getSearchOptions
+     * Summary of rawSearchOptions
      * @return mixed
      */
-   function getSearchOptions() {
+   function rawSearchOptions() {
       global $LANG;
 
       $tab = [];
+      $tab[] = [
+              'id'                 => 'common',
+              'name'               =>  __('Form', 'formvalidation')
+           ];
+       $tab[] = [
+         'id'                 => '1',
+         'table'              => $this->getTable(),
+         'field'              => 'name',
+         'name'               => __('Name'),
+         'datatype'           => 'itemlink',
+         'searchtype'         => 'contains',
+         'massiveaction'      => false,
+         'itemlink_type'      => 'PluginFormvalidationForm'
+      ];
 
-      $tab['common'] = __('Form', 'formvalidation');
+      $tab[] = [
+         'id'                 => '8',
+         'table'              => $this->getTable(),
+         'field'              => 'is_active',
+         'name'               => __('Active'),
+         'massiveaction'      => true,
+         'datatype'           => 'bool'
+      ];
 
-      $tab[1]['table']         = $this->getTable();
-      $tab[1]['field']         = 'name';
-      $tab[1]['name']          = __('Name');
-      $tab[1]['datatype']      = 'itemlink';
-      $tab[1]['searchtype']           = 'contains';
-      $tab[1]['massiveaction']        = false;
-      $tab[1]['itemlink_type'] = $this->getType();
+      $tab[] = [
+         'id'                 => '4',
+         'table'              => $this->getTable(),
+         'field'              => 'comment',
+         'name'               => __('Comments'),
+         'massiveaction'      => true,
+         'datatype'           => 'text'
+      ];
 
-      $tab[8]['table']         = $this->getTable();
-      $tab[8]['field']         = 'is_active';
-      $tab[8]['name']          = __('Active');
-      $tab[8]['massiveaction'] = true;
-      $tab[8]['datatype']      = 'bool';
+      $tab[] = [
+         'id'                 => '19',
+         'table'              => $this->getTable(),
+         'field'              => 'date_mod',
+         'name'               => __('Last update'),
+         'datatype'           => 'datetime',
+         'massiveaction'      => false
+      ];
 
-      $tab[4]['table']        = $this->getTable();
-      $tab[4]['field']        =  'comment';
-      $tab[4]['name']         =  __('Comments');
-      $tab[4]['massiveaction'] = true;
-      $tab[4]['datatype']     =  'text';
-
-      $tab[19]['table']               = $this->getTable();
-      $tab[19]['field']               = 'date_mod';
-      $tab[19]['name']                = __('Last update');
-      $tab[19]['datatype']            = 'datetime';
-      $tab[19]['massiveaction']       = false;
-
-      $tab[800]['table']               = 'glpi_plugin_formvalidation_pages';
-      $tab[800]['field']               = 'name';
-      $tab[800]['linkfield']           = 'pages_id';
-      $tab[800]['name']                = __('Page', 'formvalidation');
-      $tab[800]['massiveaction']       = false;
-      $tab[800]['datatype']            = 'dropdown';
+      $tab[] = [
+         'id'                 => '800',
+         'table'              => 'glpi_plugin_formvalidation_pages',
+         'field'              => 'name',
+         'linkfield'          => 'pages_id',
+         'name'               => __('Page', 'formvalidation'),
+         'massiveaction'      => false,
+         'datatype'           => 'dropdown'
+      ];
 
       return $tab;
    }

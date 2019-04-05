@@ -38,7 +38,7 @@ function plugin_formvalidation_install() {
       $query = "CREATE TABLE `glpi_plugin_formvalidation_configs` (
 	                  `id` INT(11) NOT NULL AUTO_INCREMENT,
 	                  `css_mandatory` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\":\"lightgrey\", \"font-weight\":\"bold\"}',
-                     `css_error` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\": \"red\"}',                     
+                     `css_error` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\": \"red\"}',
                   PRIMARY KEY (`id`)
                   )
                   ENGINE=InnoDB
@@ -52,8 +52,8 @@ function plugin_formvalidation_install() {
          ],
          "Error inserting default config into glpi_plugin_formvalidation_configs "
       );
-//      $query = "INSERT INTO `glpi_plugin_formvalidation_configs` (`id`) VALUES (1);";
-//      $DB->query($query) or die("Error inserting default config into glpi_plugin_formvalidation_configs " . $DB->error());
+     // $query = "INSERT INTO `glpi_plugin_formvalidation_configs` (`id`) VALUES (1);";
+      //$DB->query($query) or die("Error inserting default config into glpi_plugin_formvalidation_configs " . $DB->error());
    }
 
    if (!$DB->tableExists("glpi_plugin_formvalidation_itemtypes")) {

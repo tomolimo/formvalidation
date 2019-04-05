@@ -25,6 +25,10 @@
    </authors>
    <versions>
       <version>
+         <num>0.5.0</num>
+         <compatibility>9.3</compatibility>
+      </version>
+      <version>
          <num>0.4.4</num>
          <compatibility>9.2</compatibility>
       </version>
