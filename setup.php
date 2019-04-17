@@ -31,7 +31,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Original Author of file: Olivier Moron
 // ----------------------------------------------------------------------
 
-define ("PLUGIN_FORMVALIDATION_VERSION", "0.5.0");
+define ("PLUGIN_FORMVALIDATION_VERSION", "0.5.1");
 
 /**
  * Summary of plugin_init_formvalidation
@@ -94,7 +94,7 @@ function plugin_version_formvalidation() {
                  'homepage'       => 'https://github.com/tomolimo/formvalidation',
                  'minGlpiVersion' => '9.3',
                   'requirements'   => ['glpi' => ['min' => '9.3',
-                                           'max' => '9.3.99']]
+                                           'max' => '9.4']]
                                            ];
 }
 

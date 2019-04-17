@@ -16,7 +16,11 @@ class PluginFormvalidationPage extends CommonDBTM {
 
    static $rightname = 'config';
 
-   static function canPurge(){
+   static function canPurge() {
+      return Config::canUpdate();
+   }
+
+   static function canCreate() {
       return Config::canUpdate();
    }
 
@@ -27,7 +31,7 @@ class PluginFormvalidationPage extends CommonDBTM {
    function rawSearchOptions() {
       // global $LANG;
 
-      $tab = [];     
+      $tab = [];
 
       $tab[] = [
             'id'                 => 'common',
@@ -42,7 +46,7 @@ class PluginFormvalidationPage extends CommonDBTM {
         'searchtype'         => 'contains',
         'massiveaction'      => false,
         'itemlink_type'      => 'PluginFormvalidationPage'
-     ];
+      ];
 
       $tab[] = [
          'id'                 => '803',

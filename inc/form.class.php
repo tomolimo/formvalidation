@@ -16,7 +16,7 @@ class PluginFormvalidationForm extends CommonDBTM {
 
    static $rightname = 'config';
 
-   static function canPurge(){
+   static function canPurge() {
       return Config::canUpdate();
    }
 
@@ -41,36 +41,36 @@ class PluginFormvalidationForm extends CommonDBTM {
          'searchtype'         => 'contains',
          'massiveaction'      => false,
          'itemlink_type'      => 'PluginFormvalidationForm'
-      ];
+       ];
 
-      $tab[] = [
+       $tab[] = [
          'id'                 => '8',
          'table'              => $this->getTable(),
          'field'              => 'is_active',
          'name'               => __('Active'),
          'massiveaction'      => true,
          'datatype'           => 'bool'
-      ];
+       ];
 
-      $tab[] = [
+       $tab[] = [
          'id'                 => '4',
          'table'              => $this->getTable(),
          'field'              => 'comment',
          'name'               => __('Comments'),
          'massiveaction'      => true,
          'datatype'           => 'text'
-      ];
+       ];
 
-      $tab[] = [
+       $tab[] = [
          'id'                 => '19',
          'table'              => $this->getTable(),
          'field'              => 'date_mod',
          'name'               => __('Last update'),
          'datatype'           => 'datetime',
          'massiveaction'      => false
-      ];
+       ];
 
-      $tab[] = [
+       $tab[] = [
          'id'                 => '800',
          'table'              => 'glpi_plugin_formvalidation_pages',
          'field'              => 'name',
@@ -78,9 +78,9 @@ class PluginFormvalidationForm extends CommonDBTM {
          'name'               => __('Page', 'formvalidation'),
          'massiveaction'      => false,
          'datatype'           => 'dropdown'
-      ];
+       ];
 
-      return $tab;
+       return $tab;
    }
 
 
