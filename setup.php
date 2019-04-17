@@ -31,7 +31,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Original Author of file: Olivier Moron
 // ----------------------------------------------------------------------
 
-define ("PLUGIN_FORMVALIDATION_VERSION", "0.4.4");
+define ("PLUGIN_FORMVALIDATION_VERSION", "0.4.5");
 
 /**
  * Summary of plugin_init_formvalidation

@@ -16,7 +16,7 @@ class PluginFormvalidationForm extends CommonDBTM {
 
    static $rightname = 'config';
 
-   static function canPurge(){
+   static function canPurge() {
       return Config::canUpdate();
    }
 
