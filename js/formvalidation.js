@@ -1203,7 +1203,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
              $('body').on('mousemove', 'form span, form div, form td, form th, form img', myMouseEnter); // form input, form textarea,
 
              //------------------------------------------
-             $('body').on('mouseover', 'form div.select2-container, form input[type=radio], form input:text:visible:not(.select2-focusser), form textarea:visible, form td.mceIframeContainer iframe, form div.mce-edit-area.mce-container.mce-panel.mce-stack-layout-item.mce-last iframe,form span.form-group-checkbox, form input[type=checkbox], form div.rateit', function () {
+             $('body').on('mouseover', 'form span.select2-container, form div.select2-container, form input[type=radio], form input:text:visible:not(.select2-focusser), form textarea:visible, form td.mceIframeContainer iframe, form div.mce-edit-area.mce-container.mce-panel.mce-stack-layout-item.mce-last iframe,form span.form-group-checkbox, form input[type=checkbox], form div.rateit', function () {
                if (selectMode==SELECT_FIELD) {
                   var field = false;
 
@@ -1232,7 +1232,11 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
                         };
                         break;
                      case 'span':
-                        jqValueElt = $(this).find('> input:checkbox');
+                        jqValueElt = $(this).find('> input:checkbox'); // is it a checkbox?
+                        if (jqValueElt.length == 0) {
+                           // is it a select?
+                           jqValueElt = $(this).siblings('select');
+                        }
                         field = {
                            'jq_value_elt': jqValueElt,
                            'jq_focus_elt': $(this),

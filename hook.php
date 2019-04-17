@@ -48,11 +48,11 @@ function plugin_formvalidation_install() {
       $DB->query($query) or die("Error creating glpi_plugin_formvalidation_configs " . $DB->error());
       $DB->insertOrDie(
          'glpi_plugin_formvalidation_configs', [
-            'id'      => '1',            
+            'id'      => '1',
          ],
          "Error inserting default config into glpi_plugin_formvalidation_configs "
       );
-     // $query = "INSERT INTO `glpi_plugin_formvalidation_configs` (`id`) VALUES (1);";
+      // $query = "INSERT INTO `glpi_plugin_formvalidation_configs` (`id`) VALUES (1);";
       //$DB->query($query) or die("Error inserting default config into glpi_plugin_formvalidation_configs " . $DB->error());
    }
 

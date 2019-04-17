@@ -20,7 +20,7 @@ class PluginFormvalidationField extends CommonDBTM {
     */
    static $rightname = 'config';
 
-   static function canPurge(){
+   static function canPurge() {
       return Config::canUpdate();
    }
 
@@ -107,7 +107,6 @@ class PluginFormvalidationField extends CommonDBTM {
          'massiveaction'      => false,
          'datatype'           => 'dropdown'
       ];
-
 
       return $tab;
    }
