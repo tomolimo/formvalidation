@@ -43,3 +43,6 @@ $LANG['plugin_formvalidation']['forms'][4][4][10]="Description must be at least 
 $LANG['plugin_formvalidation']['forms'][4][5][12]="Description must be at least 10 chars and 3 words.";
 $LANG['plugin_formvalidation']['forms'][4][6][14]="Description must be at least 10 chars and 5 words.";
 
+$LANG['plugin_formvalidation']['forms'][10][25][126]="File does not exist !";
+
+

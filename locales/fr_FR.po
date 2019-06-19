@@ -1,22 +1,28 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: form validation\n"
-"POT-Creation-Date: 2016-05-26 10:50+0200\n"
-"PO-Revision-Date: 2016-05-26 10:50+0200\n"
+"POT-Creation-Date: 2019-04-19 09:49+0200\n"
+"PO-Revision-Date: 2019-04-19 09:56+0200\n"
 "Last-Translator: Olivier Moron <olivier.moron@araymond.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 2.2.1\n"
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Poedit-KeywordsList: __\n"
+"X-Poedit-KeywordsList: __:1,2t;_e:1,2t;_x:1c,2,3t;_n:1,2,4t;__s:1,2t;"
+"_ex:1c,2,3t;_sx:1c,2,3t;_nx:1c,2,3,5t\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: js\n"
+"X-Poedit-SearchPathExcluded-1: .svn\n"
+"X-Poedit-SearchPathExcluded-2: formvalidation.png\n"
+"X-Poedit-SearchPathExcluded-3: formvalidation.xml\n"
+"X-Poedit-SearchPathExcluded-4: README.md\n"
+"X-Poedit-SearchPathExcluded-5: css\n"
 
-#: front/field.form.php:78
+#: front/field.form.php:84
 msgid "Form Validation - Field"
 msgstr "Validation Formulaire - Champ"
 
@@ -24,7 +30,7 @@ msgstr "Validation Formulaire - Champ"
 msgid "Form Validations"
 msgstr "Validation Formulaires"
 
-#: front/form.form.php:68
+#: front/form.form.php:70
 msgid "Form Validation - Form"
 msgstr "Validation Formulaire - Formulaire"
 
@@ -32,166 +38,107 @@ msgstr "Validation Formulaire - Formulaire"
 msgid "Form Validation - Page"
 msgstr "Validation Formulaire - Page"
 
-#: inc/field.class.php:23
+#: hook.php:294
+msgid "Type of item"
+msgstr "Type de l'objet"
+
+#: inc/field.class.php:36
 msgid "Fields"
 msgstr "Champs"
 
-#: inc/field.class.php:25 inc/field.class.php:37
+#: inc/field.class.php:38 inc/field.class.php:50
 msgid "Field"
 msgstr "Champ"
 
-#: inc/field.class.php:41 inc/field.class.php:323 inc/form.class.php:32
-#: inc/form.class.php:361 inc/page.class.php:113
-msgid "Name"
-msgstr "Nom"
-
-#: inc/field.class.php:49 inc/field.class.php:229 inc/field.class.php:330
-#: inc/form.class.php:40 inc/form.class.php:274 inc/form.class.php:368
-#: inc/page.class.php:45 inc/page.class.php:123
-msgid "Active"
-msgstr "Actif"
-
-#: inc/field.class.php:55 inc/field.class.php:325 inc/form.class.php:46
-#: inc/form.class.php:363 inc/page.class.php:51 inc/page.class.php:118
-msgid "Comments"
-msgstr "Commentaires"
-
-#: inc/field.class.php:61 inc/form.class.php:52 inc/page.class.php:57
-msgid "Last update"
-msgstr "Dernière modification"
-
-#: inc/field.class.php:75 inc/form.class.php:28 inc/form.class.php:74
+#: inc/field.class.php:81 inc/form.class.php:32 inc/form.class.php:78
 msgid "Form"
 msgstr "Formulaire"
 
-#: inc/field.class.php:81 inc/field.class.php:340
+#: inc/field.class.php:87 inc/field.class.php:370
 msgid "Value CSS selector"
 msgstr "Sélecteur CSS de valeur"
 
-#: inc/field.class.php:215 inc/form.class.php:244
-#, php-format
-msgid "%1$s = %2$s"
-msgstr "%1$s = %2$s"
-
-#: inc/field.class.php:227 inc/form.class.php:268
-msgid "ID"
-msgstr "ID"
-
-#: inc/field.class.php:228
+#: inc/field.class.php:249
 msgid " / CSS selector"
 msgstr "/ Sélecteur CSS"
 
-#: inc/field.class.php:230 inc/field.class.php:360
+#: inc/field.class.php:251 inc/field.class.php:402
 msgid "Validation formula"
 msgstr "Formule de validation"
 
-#: inc/field.class.php:231
+#: inc/field.class.php:252
 msgid "Force mand. sign"
 msgstr "Force signe oblig."
 
-#: inc/field.class.php:232 inc/field.class.php:372
+#: inc/field.class.php:253 inc/field.class.php:392
 msgid "Mandatory sign formula"
 msgstr "Formule 'signe obligatoire'"
 
-#: inc/field.class.php:279
+#: inc/field.class.php:300
 msgid "Formula guidelines"
 msgstr "Guide formules"
 
-#: inc/field.class.php:287 inc/form.class.php:329
-msgid "No item found"
-msgstr "Pas d'élément trouvé"
-
-#: inc/field.class.php:345
+#: inc/field.class.php:375
 msgid "Alternative value CSS selector"
 msgstr "Sélecteur CSS de valeur alternative"
 
-#: inc/field.class.php:350
+#: inc/field.class.php:380
 msgid "Error sign CSS selector"
 msgstr "Sélecteur CSS signe d'erreur"
 
-#: inc/field.class.php:355
-msgid "Mandatory sign CSS selector"
-msgstr "Sélecteur CSS 'signe obligatoire'"
-
-#: inc/field.class.php:365
+#: inc/field.class.php:385
 msgid "Force mandatory sign"
 msgstr "Force signe obligatoire"
 
-#: inc/form.class.php:59 inc/page.class.php:28 inc/page.class.php:82
+#: inc/field.class.php:397
+msgid "Mandatory sign CSS selector"
+msgstr "Sélecteur CSS 'signe obligatoire'"
+
+#: inc/form.class.php:63 inc/page.class.php:36 inc/page.class.php:92
 msgid "Page"
 msgstr "Page"
 
-#: inc/form.class.php:72
+#: inc/form.class.php:76
 msgid "Forms"
 msgstr "Formulaires"
 
-#: inc/form.class.php:273 inc/form.class.php:384
+#: inc/form.class.php:280 inc/form.class.php:403
 msgid "CSS selector"
 msgstr "Sélecteur CSS"
 
-#: inc/form.class.php:275
+#: inc/form.class.php:282
 msgid "Item creation"
 msgstr "Création d'éléments"
 
-#: inc/form.class.php:376
-msgid "For item creation"
-msgstr "Pour création d'élément"
+#: inc/form.class.php:284
+msgid "Massive actions"
+msgstr "Action en masse"
 
-#: inc/form.class.php:389
+#: inc/form.class.php:286
+msgid "Massive actions (Not available as V8JS is not loaded)"
+msgstr "Action en masse (non disponible car module V8JS non chargé)"
+
+#: inc/form.class.php:408
 msgid "Formula (left empty to default to <b><i>true</i></b>)"
 msgstr "Formule (vide pour validation par défaut à <b><i>vrai</i></b>)"
 
-#: inc/page.class.php:32
-msgid "Title"
-msgstr "Titre"
+#: inc/itemtype.class.php:17
+msgid "Item Type"
+msgid_plural "Item Types"
+msgstr[0] "Type d'objet"
+msgstr[1] "Types d'objets"
 
-#: inc/page.class.php:40 inc/page.class.php:137
-msgid "Associated item type"
-msgstr "Type d'élément associé"
+#: inc/itemtype.class.php:33
+msgid "Item type (example: Project)"
+msgstr "Type d'objet (exemple : Project)"
 
-#: inc/page.class.php:63
-msgid "Entity"
-msgstr "Entité"
+#: inc/itemtype.class.php:37
+msgid "URL path part (example: /front/project.form.php)"
+msgstr "URL du fichier (exemple : /front/project.form.php) "
 
-#: inc/page.class.php:69 inc/page.class.php:130
-msgid "Child entities"
-msgstr "Sous-entités"
-
-#: inc/page.class.php:80
+#: inc/page.class.php:90
 msgid "Pages"
 msgstr "Pages"
-
-#: inc/page.class.php:160
-msgid "Assets"
-msgstr "Parc"
-
-#: inc/page.class.php:170
-msgid "Assistance"
-msgstr "Assistance"
-
-#: inc/page.class.php:173
-msgid "Recurrent tickets"
-msgstr "Tickets récurrents"
-
-#: inc/page.class.php:174
-msgid "Management"
-msgstr "Administration"
-
-#: inc/page.class.php:180
-msgid "Tools"
-msgstr "Outils"
-
-#: inc/page.class.php:181
-msgid "Notes"
-msgstr "Notes"
-
-#: inc/page.class.php:182
-msgid "RSS feed"
-msgstr "Flux RSS"
-
-#: inc/page.class.php:183
-msgid "Administration"
-msgstr "Administration"
 
 #: inc/user.class.php:43
 msgid "Form Validation"
@@ -205,6 +152,65 @@ msgstr "Mode édition"
 msgid "Edit mode (valid for current session only, will be reset at next login)"
 msgstr "Mode édition (valide uniquement pour la session en cours)"
 
-#: inc/user.class.php:80
-msgid "Save"
-msgstr "Sauvegarder"
+#~ msgid "Name"
+#~ msgstr "Nom"
+
+#~ msgid "Active"
+#~ msgstr "Actif"
+
+#~ msgid "Comments"
+#~ msgstr "Commentaires"
+
+#~ msgid "Last update"
+#~ msgstr "Dernière modification"
+
+#~ msgid "%1$s = %2$s"
+#~ msgstr "%1$s = %2$s"
+
+#~ msgid "ID"
+#~ msgstr "ID"
+
+#~ msgid "No item found"
+#~ msgstr "Pas d'élément trouvé"
+
+#~ msgid "For item creation"
+#~ msgstr "Pour création d'élément"
+
+#~ msgid "Title"
+#~ msgstr "Titre"
+
+#~ msgid "Associated item type"
+#~ msgstr "Type d'élément associé"
+
+#~ msgid "Entity"
+#~ msgstr "Entité"
+
+#~ msgid "Child entities"
+#~ msgstr "Sous-entités"
+
+#~ msgid "Assets"
+#~ msgstr "Parc"
+
+#~ msgid "Assistance"
+#~ msgstr "Assistance"
+
+#~ msgid "Recurrent tickets"
+#~ msgstr "Tickets récurrents"
+
+#~ msgid "Management"
+#~ msgstr "Administration"
+
+#~ msgid "Tools"
+#~ msgstr "Outils"
+
+#~ msgid "Notes"
+#~ msgstr "Notes"
+
+#~ msgid "RSS feed"
+#~ msgstr "Flux RSS"
+
+#~ msgid "Administration"
+#~ msgstr "Administration"
+
+#~ msgid "Save"
+#~ msgstr "Sauvegarder"
