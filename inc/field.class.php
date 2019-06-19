@@ -455,6 +455,21 @@ class PluginFormvalidationField extends CommonDBTM {
       return $input;
    }
 
+   function post_addItem() {
+      global $DB,$CFG_GLPI;
+      $id = $this->fields['id'];
+      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/fields/".time()."/".rand()."/".$id;
+      $DB->updateOrDie(
+         'glpi_plugin_formvalidation_fields',
+         [
+            'guid' => md5($guid)
+         ],
+         [
+            'id'  => $id
+         ]
+      );
+   }
+
 
 }
 

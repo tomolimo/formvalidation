@@ -44,7 +44,7 @@ $validations['config']['editmode']=$_SESSION['glpiformvalidationeditmode'];
 
 $is_createitem = 0; // by default
 
-$obj = getItemForItemtype( $_GET['itemtype'] );
+$obj = getItemForItemtype( $_GET['name'] );
 if ($obj) {
    if ($_GET['id'] > 0) {
       $obj->getFromDB( $_GET['id'] );
@@ -57,23 +57,30 @@ if ($obj) {
       $entity_restrict = $_SESSION['glpiactive_entity'];
    }
 
-   $query = "SELECT glpi_plugin_formvalidation_pages.*, glpi_plugin_formvalidation_itemtypes.itemtype FROM glpi_plugin_formvalidation_pages
-            JOIN glpi_plugin_formvalidation_itemtypes on glpi_plugin_formvalidation_itemtypes.id=glpi_plugin_formvalidation_pages.itemtypes_id
-            WHERE glpi_plugin_formvalidation_itemtypes.itemtype = '".$obj->getType()."' AND is_active=1 ".
-               getEntitiesRestrictRequest( 'AND', 'glpi_plugin_formvalidation_pages', '', $entity_restrict, true);
+   $query = $DB->request([
+      'SELECT'       => ['glpi_plugin_formvalidation_pages.*','glpi_plugin_formvalidation_itemtypes.name'],
+      'FROM'         => 'glpi_plugin_formvalidation_pages',
+      'INNER JOIN'   => ['glpi_plugin_formvalidation_itemtypes' =>
+                                 ['FKEY' =>
+                                    [
+                                    'glpi_plugin_formvalidation_pages'     => 'itemtypes_id',
+                                    'glpi_plugin_formvalidation_itemtypes' => 'id'
+                                    ]
+                                 ]
+                        ],
+                        ['AND' => ['glpi_plugin_formvalidation_itemtypes.name'=>$obj->getType(), 'is_active' => 1, getEntitiesRestrictCriteria('glpi_plugin_formvalidation_pages', '', $entity_restrict, true)]]
 
-   foreach ($DB->request( $query ) as $page) {
+               ]
+   );
+   foreach ($query as $page) {
       $validations['pages_id']=$page['id']; // normaly there is only one page
-      $validations['itemtype']=$page['itemtype']; // normaly there is only one page
+      //$validations['itemtype']=$page['itemtype']; // normaly there is only one page
+      $validations['itemtype']=$page['name']; // normaly there is only one page
 
-      $query = "SELECT * FROM glpi_plugin_formvalidation_forms WHERE is_createitem=$is_createitem AND pages_id = ".$page['id'];
-
-      foreach ($DB->request( $query ) as $form) {
+      foreach ($DB->request('glpi_plugin_formvalidation_forms', ['AND'=>['is_createitem' => $is_createitem, 'pages_id' => $page['id']]]) as $form) {
          $validations['forms'][$form['id']]= Toolbox::stripslashes_deep( $form );
          $validations['forms'][$form['id']]['fields'] = []; // needed in case this form has no fields
-
-         $query = "SELECT * FROM glpi_plugin_formvalidation_fields WHERE forms_id = ".$form['id'];
-         foreach ($DB->request( $query ) as $field) {
+         foreach ($DB->request('glpi_plugin_formvalidation_fields', ['forms_id' => $form['id']]) as $field) {
             $validations['forms'][$form['id']]['fields'][$field['id']] = Toolbox::stripslashes_deep( $field );
          }
       }

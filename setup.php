@@ -31,7 +31,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Original Author of file: Olivier Moron
 // ----------------------------------------------------------------------
 
-define ("PLUGIN_FORMVALIDATION_VERSION", "0.5.1");
+define ("PLUGIN_FORMVALIDATION_VERSION", "0.5.3");
 
 /**
  * Summary of plugin_init_formvalidation
@@ -71,6 +71,8 @@ function plugin_init_formvalidation() {
    $PLUGIN_HOOKS['pre_show_item']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_pre_show_tab_formvalidation'];
 
    $PLUGIN_HOOKS['post_item_form']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_post_item_form_formvalidation'];
+
+   $PLUGIN_HOOKS['use_massive_action']['formvalidation'] = 1;
 
    // Add specific files to add to the header : javascript or css
    $plug = new Plugin;

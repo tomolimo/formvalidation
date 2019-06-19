@@ -259,7 +259,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
             capitalizeArray(itemtype);
             $.ajax({
                url: ARRoot + '/plugins/formvalidation/ajax/getFormValidations.php',
-               data: { itemtype: itemtype.join(''), id: items_id },
+               data: { name: itemtype.join(''), id: items_id },
                success: function (response, options) {
                   //debugger;
                   ARV = $.parseJSON(response);
@@ -662,17 +662,17 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
             //------------------------------------------
             // fill in field formulas
             $.each(formulaList, function (indexFormula, objFormula) {
-               $.each(valList, function (indexVal, objVal) {
-                  var fieldRegex;
+                $.each(valList, function (indexVal, objVal) {
+                    var fieldRegex;
                   if (indexVal == indexFormula) {
-                     // regex for default field '#'
-                     fieldRegex = new RegExp("#\\B", "g");
-                  } else {
-                     // regex for other fields
-                     fieldRegex = new RegExp("#" + indexVal + "\\b", "g");
+                      // regex for default field '#'
+                      fieldRegex = new RegExp("#\\B", "g");
+                      formulaList[indexFormula] = formulaList[indexFormula].replace(fieldRegex, objVal);
                   }
-                  formulaList[indexFormula] = formulaList[indexFormula].replace(fieldRegex, objVal);
-               });
+                    // regex for other fields
+                    fieldRegex = new RegExp("#" + indexVal + "\\b", "g");
+                    formulaList[indexFormula] = formulaList[indexFormula].replace(fieldRegex, objVal);
+                });
             });
 
             // TODO external fields
