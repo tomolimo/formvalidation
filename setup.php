@@ -31,14 +31,14 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Original Author of file: Olivier Moron
 // ----------------------------------------------------------------------
 
-define ("PLUGIN_FORMVALIDATION_VERSION", "0.5.1");
+define ("PLUGIN_FORMVALIDATION_VERSION", "0.6.3");
 
 /**
  * Summary of plugin_init_formvalidation
  * @return mixed
  */
 function plugin_init_formvalidation() {
-   global $PLUGIN_HOOKS,$LANG,$CFG_GLPI;
+   global $PLUGIN_HOOKS, $LANG, $CFG_GLPI, $DB;
 
    if ((!isset($_SESSION["glpicronuserrunning"]) || (Session::getLoginUserID() != $_SESSION["glpicronuserrunning"])) && !isset($_SESSION['glpiformvalidationeditmode'])) {
       $_SESSION['glpiformvalidationeditmode'] = 0;
@@ -62,15 +62,32 @@ function plugin_init_formvalidation() {
    if (extension_loaded('v8js')) {
       // used only for validation of massiveactions
       // can only be done with v8js module
-      $PLUGIN_HOOKS['pre_item_update']['formvalidation'] = [
-                 'Ticket' => ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'],
-                 'Computer' => ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation']
-             ];
+      $res = $DB->request([
+                     'SELECT'     => 'glpi_plugin_formvalidation_itemtypes.name',
+                     'FROM'       => 'glpi_plugin_formvalidation_itemtypes',
+                     'INNER JOIN' => [
+                        'glpi_plugin_formvalidation_pages' => [
+                           'FKEY' => [
+                              'glpi_plugin_formvalidation_pages' => 'itemtypes_id', 
+                              'glpi_plugin_formvalidation_itemtypes' => 'id'
+                           ]
+                        ]
+                     ],
+          ]);
+      foreach($res as $itemtype) {
+         $PLUGIN_HOOKS['pre_item_update']['formvalidation'][$itemtype['name']] = ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'];
+      }
+      //$PLUGIN_HOOKS['pre_item_update']['formvalidation'] = [
+      //           'Ticket' => ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'],
+      //           'Computer' => ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation']
+      //       ];
    }
 
    $PLUGIN_HOOKS['pre_show_item']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_pre_show_tab_formvalidation'];
 
    $PLUGIN_HOOKS['post_item_form']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_post_item_form_formvalidation'];
+
+   $PLUGIN_HOOKS['use_massive_action']['formvalidation'] = 1;
 
    // Add specific files to add to the header : javascript or css
    $plug = new Plugin;
@@ -92,9 +109,9 @@ function plugin_version_formvalidation() {
                  'author'         => 'Olivier Moron',
                  'license'        => 'GPLv2+',
                  'homepage'       => 'https://github.com/tomolimo/formvalidation',
-                 'minGlpiVersion' => '9.3',
-                  'requirements'   => ['glpi' => ['min' => '9.3',
-                                           'max' => '9.4']]
+                 'minGlpiVersion' => '9.4',
+                  'requirements'   => ['glpi' => ['min' => '9.4',
+                                           'max' => '9.5']]
                                            ];
 }
 
@@ -106,8 +123,8 @@ function plugin_version_formvalidation() {
  */
 function plugin_formvalidation_check_prerequisites() {
 
-   if (version_compare(GLPI_VERSION, '9.3', 'lt')) {
-      echo "This plugin requires GLPI >= 9.3";
+   if (version_compare(GLPI_VERSION, '9.4', 'lt')) {
+      echo "This plugin requires GLPI >= 9.4";
       return false;
    }
    return true;

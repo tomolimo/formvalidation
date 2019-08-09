@@ -180,34 +180,53 @@ class PluginFormvalidationField extends CommonDBTM {
 
       $restrict = "='".$form->getID()."'";
 
-      // All group members
-      $query = "SELECT DISTINCT `glpi_plugin_formvalidation_fields`.`id`,
-                       `glpi_plugin_formvalidation_fields`.`id` AS linkID,
-                       `glpi_plugin_formvalidation_fields`.`name`,
-                       `glpi_plugin_formvalidation_fields`.`css_selector_value`,
-                       `glpi_plugin_formvalidation_fields`.`formula`,
-                       `glpi_plugin_formvalidation_fields`.`is_active`,
-                       `glpi_plugin_formvalidation_fields`.`show_mandatory`,
-                       `glpi_plugin_formvalidation_fields`.`show_mandatory_if`,
-                       `glpi_plugin_formvalidation_fields`.`forms_id`
-                FROM `glpi_plugin_formvalidation_fields`
-                WHERE `glpi_plugin_formvalidation_fields`.`forms_id` $restrict
-                ORDER BY `glpi_plugin_formvalidation_fields`.`id`";
+      $res = $DB->request([
+                     'SELECT DISTINCT' => 'glpi_plugin_formvalidation_fields.id',
+                     'FIELDS'          => [
+                        'glpi_plugin_formvalidation_fields.id AS linkID',
+                        'glpi_plugin_formvalidation_fields.name',
+                        'glpi_plugin_formvalidation_fields.css_selector_value',
+                        'glpi_plugin_formvalidation_fields.formula',
+                        'glpi_plugin_formvalidation_fields.is_active',
+                        'glpi_plugin_formvalidation_fields.show_mandatory',
+                        'glpi_plugin_formvalidation_fields.show_mandatory_if',
+                        'glpi_plugin_formvalidation_fields.forms_id'
+                     ],
+                     'FROM'            => 'glpi_plugin_formvalidation_fields',
+                     'WHERE'           => [
+                        'glpi_plugin_formvalidation_fields.forms_id' => $form->getID()
+                     ],
+                     'ORDER'           => 'glpi_plugin_formvalidation_fields.id'
+         ]);
+      //// All group members
+      //$query = "SELECT DISTINCT `glpi_plugin_formvalidation_fields`.`id`,
+      //                 `glpi_plugin_formvalidation_fields`.`id` AS linkID,
+      //                 `glpi_plugin_formvalidation_fields`.`name`,
+      //                 `glpi_plugin_formvalidation_fields`.`css_selector_value`,
+      //                 `glpi_plugin_formvalidation_fields`.`formula`,
+      //                 `glpi_plugin_formvalidation_fields`.`is_active`,
+      //                 `glpi_plugin_formvalidation_fields`.`show_mandatory`,
+      //                 `glpi_plugin_formvalidation_fields`.`show_mandatory_if`,
+      //                 `glpi_plugin_formvalidation_fields`.`forms_id`
+      //          FROM `glpi_plugin_formvalidation_fields`
+      //          WHERE `glpi_plugin_formvalidation_fields`.`forms_id` $restrict
+      //          ORDER BY `glpi_plugin_formvalidation_fields`.`id`";
 
-      $result = $DB->query($query);
+      //$result = $DB->query($query);
 
-      if ($DB->numrows($result) > 0) {
-         while ($data=$DB->fetch_assoc($result)) {
-            // Add to display list, according to criterion
-            if (empty($crit) || $data[$crit]) {
-               $members[] = $data;
-            }
-            // Add to member list (member of sub-group are not member)
-            if ($data['forms_id'] == $form->getID()) {
-               $ids[]  = $data['id'];
-            }
+      //if ($DB->numrows($result) > 0) {
+      //   while ($data=$DB->fetch_assoc($result)) {
+      foreach($res as $data) {
+         // Add to display list, according to criterion
+         if (empty($crit) || $data[$crit]) {
+            $members[] = $data;
+         }
+         // Add to member list (member of sub-group are not member)
+         if ($data['forms_id'] == $form->getID()) {
+            $ids[]  = $data['id'];
          }
       }
+      //}
 
       return $entityrestrict;
    }
@@ -453,6 +472,21 @@ class PluginFormvalidationField extends CommonDBTM {
          $input['css_selector_mandatorysign'] = html_entity_decode( $input['css_selector_mandatorysign']);
       }
       return $input;
+   }
+
+   function post_addItem() {
+      global $DB,$CFG_GLPI;
+      $id = $this->fields['id'];
+      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/fields/".time()."/".rand()."/".$id;
+      $DB->updateOrDie(
+         'glpi_plugin_formvalidation_fields',
+         [
+            'guid' => md5($guid)
+         ],
+         [
+            'id'  => $id
+         ]
+      );
    }
 
 

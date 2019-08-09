@@ -136,23 +136,45 @@ EOT;
          $fieldnames = [];
          $fieldtitles = [];
 
-         $query = "SELECT DISTINCT glpi_plugin_formvalidation_forms.* FROM glpi_plugin_formvalidation_forms
-               LEFT JOIN glpi_plugin_formvalidation_fields ON glpi_plugin_formvalidation_forms.id=glpi_plugin_formvalidation_fields.forms_id
-               LEFT JOIN glpi_plugin_formvalidation_pages ON glpi_plugin_formvalidation_pages.id=glpi_plugin_formvalidation_forms.pages_id
-               LEFT JOIN glpi_plugin_formvalidation_itemtypes ON glpi_plugin_formvalidation_itemtypes.id=glpi_plugin_formvalidation_pages.itemtypes_id
-               WHERE glpi_plugin_formvalidation_itemtypes.itemtype ='".$parm->getType()."'
-				      AND glpi_plugin_formvalidation_forms.use_for_massiveaction=1
-               "; // css_selector like '%\"".$_SERVER['PHP_SELF']."%'
-         $where = "";
-         foreach (array_keys($input) as $val) {
-            if ($where != "") {
-               $where .= "\nOR ";
-            }
-            $where .= "glpi_plugin_formvalidation_fields.css_selector_value like '%\"$val%'";
+         $query2 =    [
+                        'SELECT DISTINCT'    => 'glpi_plugin_formvalidation_forms.id',
+                        'FIELDS'  => ['glpi_plugin_formvalidation_forms.name', 'glpi_plugin_formvalidation_forms.pages_id', 'glpi_plugin_formvalidation_forms.css_selector', 'glpi_plugin_formvalidation_forms.is_createitem', 'glpi_plugin_formvalidation_forms.is_active', 'glpi_plugin_formvalidation_forms.use_for_massiveaction', 'glpi_plugin_formvalidation_forms.formula', 'glpi_plugin_formvalidation_forms.comment', 'glpi_plugin_formvalidation_forms.date_mod', 'glpi_plugin_formvalidation_forms.guid'],
+                        'FROM'      => 'glpi_plugin_formvalidation_forms',
+                        'LEFT JOIN' => [
+                           'glpi_plugin_formvalidation_fields' => [
+                              'FKEY' => [
+                                 'glpi_plugin_formvalidation_forms' => 'id',
+                                 'glpi_plugin_formvalidation_fields' => 'forms_id'
+                              ]
+                           ],
+                           'glpi_plugin_formvalidation_pages' => [
+                              'FKEY' => [
+                                 'glpi_plugin_formvalidation_pages' => 'id',
+                                 'glpi_plugin_formvalidation_forms' => 'pages_id'
+                              ]
+                           ],
+                           'glpi_plugin_formvalidation_itemtypes' => [
+                              'FKEY' => [
+                                 'glpi_plugin_formvalidation_itemtypes' => 'id',
+                                 'glpi_plugin_formvalidation_pages' => 'itemtypes_id'
+                              ]
+                           ]
+                        ],
+                        'WHERE' => [
+                           'AND' => [
+                              'glpi_plugin_formvalidation_itemtypes.name' => $parm->getType(),
+                              'glpi_plugin_formvalidation_forms.use_for_massiveaction' => 1
+                           ]
+                        ]
+                  ];
+         
+         if (!empty($input)) {
+            $key = array_keys($input);
+            $query2['WHERE']['AND']["glpi_plugin_formvalidation_fields.css_selector_value"] = ['LIKE', '%'.$key[0].'%'];
          }
 
-         foreach ($DB->request( $query." AND ( $where )" ) as $form) {
-            foreach ($DB->request("SELECT * from glpi_plugin_formvalidation_fields WHERE forms_id = ".$form['id'])  as $field) {
+         foreach ($DB->request( $query2) as $form) {
+            foreach ($DB->request('glpi_plugin_formvalidation_fields', ['forms_id' => $form['id']])  as $field) {
                $matches = [];
                if (preg_match('/\[(name|id\^)=\\\\{0,1}"(?<name>[a-z_\-0-9]+)\\\\{0,1}"\]/i', $field['css_selector_value'], $matches)) {
                   $fieldnames[$field['id']]=$matches['name'];

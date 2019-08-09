@@ -168,23 +168,43 @@ class PluginFormvalidationForm extends CommonDBTM {
       //}
 
       // All group members
-      $query = "SELECT DISTINCT `glpi_plugin_formvalidation_forms`.`id`,
-                       `glpi_plugin_formvalidation_forms`.`id` AS linkID,
-                       `glpi_plugin_formvalidation_forms`.`name`,
-                       `glpi_plugin_formvalidation_forms`.`pages_id`,
-                       `glpi_plugin_formvalidation_forms`.`css_selector`,
-                       `glpi_plugin_formvalidation_forms`.`is_active`,
-                       `glpi_plugin_formvalidation_forms`.`is_createitem`,
-                       `glpi_plugin_formvalidation_forms`.`use_for_massiveaction`,
-                       `glpi_plugin_formvalidation_forms`.`name`
-                FROM `glpi_plugin_formvalidation_forms`
-                WHERE `glpi_plugin_formvalidation_forms`.`pages_id` $restrict
-                ORDER BY `glpi_plugin_formvalidation_forms`.`id`";
+        $res = $DB->request([
+                        'SELECT DISTINCT' => 'glpi_plugin_formvalidation_forms',
+                        'FIELDS'          => [
+                           'glpi_plugin_formvalidation_forms.id AS linkID',
+                           'glpi_plugin_formvalidation_forms.name',
+                           'glpi_plugin_formvalidation_forms.pages_id',
+                           'glpi_plugin_formvalidation_forms.css_selector',
+                           'glpi_plugin_formvalidation_forms.is_active',
+                           'glpi_plugin_formvalidation_forms.is_createitem',
+                           'glpi_plugin_formvalidation_forms.use_for_massiveaction',
+                           'glpi_plugin_formvalidation_forms.name'
+                        ],
+                        'FROM'            => 'glpi_plugin_formvalidation_forms',
+                        'WHERE'           => [
+                           'glpi_plugin_formvalidation_forms.pages_id' => $page->getID()
+                        ],
+                        'ORDER'           => 'glpi_plugin_formvalidation_forms.id'
+           ]);
 
-      $result = $DB->query($query);
+      //$query = "SELECT DISTINCT `glpi_plugin_formvalidation_forms`.`id`,
+      //                 `glpi_plugin_formvalidation_forms`.`id` AS linkID,
+      //                 `glpi_plugin_formvalidation_forms`.`name`,
+      //                 `glpi_plugin_formvalidation_forms`.`pages_id`,
+      //                 `glpi_plugin_formvalidation_forms`.`css_selector`,
+      //                 `glpi_plugin_formvalidation_forms`.`is_active`,
+      //                 `glpi_plugin_formvalidation_forms`.`is_createitem`,
+      //                 `glpi_plugin_formvalidation_forms`.`use_for_massiveaction`,
+      //                 `glpi_plugin_formvalidation_forms`.`name`
+      //          FROM `glpi_plugin_formvalidation_forms`
+      //          WHERE `glpi_plugin_formvalidation_forms`.`pages_id` $restrict
+      //          ORDER BY `glpi_plugin_formvalidation_forms`.`id`";
 
-      if ($DB->numrows($result) > 0) {
-         while ($data=$DB->fetch_assoc($result)) {
+      //$result = $DB->query($query);
+
+      //if ($DB->numrows($result) > 0) {
+      //   while ($data=$DB->fetch_assoc($result)) {
+        foreach($res as $data) {
             // Add to display list, according to criterion
             if (empty($crit) || $data[$crit]) {
                $members[] = $data;
@@ -194,7 +214,7 @@ class PluginFormvalidationForm extends CommonDBTM {
                $ids[]  = $data['id'];
             }
          }
-      }
+      //}
 
       return $entityrestrict;
    }
@@ -459,10 +479,26 @@ class PluginFormvalidationForm extends CommonDBTM {
       // as it is purged, then need to purge the associated fields
       // get list of fields to purge them
       $fld = new PluginFormvalidationField;
-      $query = "SELECT * FROM ".$fld->getTable()." WHERE forms_id=".$this->getID();
-      foreach ($DB->request($query) as $fldkey => $row) {
+      $res = $DB->request($fld->getTable(), ['forms_id' => $this->getID()]);
+      //$query = "SELECT * FROM ".$fld->getTable()." WHERE forms_id=".$this->getID();
+      foreach ($res as $fldkey => $row) {
          $fld->delete($row, 1);
       }
+   }
+
+   function post_addItem() {
+      global $DB,$CFG_GLPI;
+      $id = $this->fields['id'];
+      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/form/".time()."/".rand()."/".$id;
+      $DB->updateOrDie(
+         'glpi_plugin_formvalidation_forms',
+         [
+            'guid' => md5($guid)
+         ],
+         [
+            'id'  => $id
+         ]
+      );
    }
 
 
