@@ -45,7 +45,7 @@ $validations['config']['editmode']=$_SESSION['glpiformvalidationeditmode'];
 $is_createitem = 0; // by default
 
 $obj = getItemForItemtype( $_GET['name'] );
-if ($obj) {
+if ($obj && method_exists($obj, 'getType')) {
    if ($_GET['id'] > 0) {
       $obj->getFromDB( $_GET['id'] );
       $entity_restrict = 0; // by default if $obj doesn't have entities_id in table

@@ -1,7 +1,8 @@
 CREATE TABLE `glpi_plugin_formvalidation_configs` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
 	`css_mandatory` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\":\"lightgrey\", \"font-weight\":\"bold\"}',
-   `css_error` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\": \"red\"}',                     
+   `css_error` VARCHAR(200) NOT NULL DEFAULT '{\"background-color\": \"red\"}',
+   `js_path` VARCHAR(255),                   
    PRIMARY KEY (`id`)
 )
 ENGINE=InnoDB;

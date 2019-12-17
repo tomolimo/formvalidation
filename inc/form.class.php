@@ -169,7 +169,7 @@ class PluginFormvalidationForm extends CommonDBTM {
 
       // All group members
         $res = $DB->request([
-                        'SELECT DISTINCT' => 'glpi_plugin_formvalidation_forms',
+                        'SELECT DISTINCT' => 'glpi_plugin_formvalidation_forms.id',
                         'FIELDS'          => [
                            'glpi_plugin_formvalidation_forms.id AS linkID',
                            'glpi_plugin_formvalidation_forms.name',
@@ -227,6 +227,7 @@ class PluginFormvalidationForm extends CommonDBTM {
    static function showForPage(PluginFormvalidationPage $page) {
       global $DB, $LANG, $CFG_GLPI;
 
+      $config = PluginFormvalidationConfig::getInstance();
       $ID = $page->getID();
       if (!PluginFormvalidationForm::canView()
          || !$page->can($ID, READ)) {
@@ -316,10 +317,11 @@ class PluginFormvalidationForm extends CommonDBTM {
          $header_end .= "<th>".__('CSS selector', 'formvalidation')."</th>";
          $header_end .= "<th>".__('Active')."</th>";
          $header_end .= "<th>".__('Item creation', 'formvalidation')."</th>";
-         if (extension_loaded('v8js')) {
+         //if (extension_loaded('v8js')) {
+         if(extension_loaded('v8js') || file_exists($config->fields['js_path'])) {
             $header_end .= "<th>".__('Massive actions', 'formvalidation')."</th>";
          } else {
-            $header_end .= "<th>".__('Massive actions (Not available as V8JS is not loaded)', 'formvalidation')."</th>";
+            $header_end .= "<th>".__('Massive actions (Not available as node.js and v8js are not installed/enabled)', 'formvalidation')."</th>";
          }
          $header_end .= "</tr>";
          echo $header_begin.$header_top.$header_end;
@@ -400,7 +402,7 @@ class PluginFormvalidationForm extends CommonDBTM {
 
    function showForm ($ID, $options = ['candel'=>false]) {
       global $DB, $CFG_GLPI, $LANG;
-
+      $config = PluginFormvalidationConfig::getInstance();
       if ($ID > 0) {
          $this->check($ID, READ);
       }
@@ -413,14 +415,14 @@ class PluginFormvalidationForm extends CommonDBTM {
       $this->showFormHeader($options);
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__("Name")."&nbsp;:</td>";
+      echo "<td>".__("Name")."</td>";
       echo "<td><input type='text' size='50' maxlength=250 name='name' value='".htmlentities($this->fields["name"], ENT_QUOTES)."'></td>";
-      echo "<td rowspan='5' class='middle'>".__("Comments")."&nbsp;:</td>";
+      echo "<td rowspan='5' class='middle'>".__("Comments")."</td>";
       echo "<td class='center middle' rowspan='5'><textarea cols='40' rows='5' name='comment' >".htmlentities($this->fields["comment"], ENT_QUOTES)."</textarea></td>";
       echo "</tr>";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Active")."&nbsp;:</td>";
+      echo "<td >".__("Active")."</td>";
       echo "<td>";
       Html::showCheckbox(['name'           => 'is_active',
                                'checked'        => $this->fields["is_active"]
@@ -428,7 +430,7 @@ class PluginFormvalidationForm extends CommonDBTM {
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("For item creation")."&nbsp;:</td>";
+      echo "<td >".__("For item creation")."</td>";
       echo "<td>";
       Html::showCheckbox(['name'           => 'is_createitem',
                                'checked'        => $this->fields["is_createitem"]
@@ -441,21 +443,23 @@ class PluginFormvalidationForm extends CommonDBTM {
       echo "</tr>";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Formula (left empty to default to <b><i>true</i></b>)", 'formvalidation')."&nbsp;:</td>";
+      echo "<td >".__("Formula (left empty to default to <b><i>true</i></b>)", 'formvalidation')."</td>";
       echo "<td><input type='text' size='50' maxlength=1000 name='formula' value='".htmlentities($this->fields["formula"], ENT_QUOTES)."'></td>";
       echo "</tr>";
 
       echo "<tr>";
       $v8js = extension_loaded('v8js');
-      if ($v8js) {
-         echo "<td >".__("Validate massive actions")."&nbsp;:</td>";
+      $node = file_exists($config->fields['js_path']);
+      //if ($v8js) {
+      if($v8js ||$node) {
+         echo "<td >".__("Validate massive actions")."</td>";
       } else {
-         echo "<td >".__("Massive actions (Not available as V8JS is not loaded)")."&nbsp;:</td>";
+         echo "<td >".__("Massive actions (Will not work if node.js or v8js are not installed/enabled)")."</td>";
       }
       echo "<td>";
       Html::showCheckbox(['name'    => 'use_for_massiveaction',
                          'checked'  => $this->fields["use_for_massiveaction"],
-                         'readonly' => !$v8js
+                         'readonly' => false
                          ]);
 
       echo "</td></tr>";

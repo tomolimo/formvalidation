@@ -31,7 +31,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Original Author of file: Olivier Moron
 // ----------------------------------------------------------------------
 
-define ("PLUGIN_FORMVALIDATION_VERSION", "0.6.3");
+define ("PLUGIN_FORMVALIDATION_VERSION", "0.6.8");
 
 /**
  * Summary of plugin_init_formvalidation
@@ -54,34 +54,29 @@ function plugin_init_formvalidation() {
       // Display a menu entry
       $PLUGIN_HOOKS['menu_toadd']['formvalidation'] = ['config' => 'PluginFormvalidationMenu'];
    }
+   Plugin::registerClass('PluginFormvalidationConfig', ['addtabon' => 'Config']);
+   $PLUGIN_HOOKS['config_page']['formvalidation'] = 'front/config.form.php';
 
    //$PLUGIN_HOOKS['pre_item_add']['formvalidation'] = array(
    //           'Ticket' => array('PluginFormvalidationHook', 'plugin_pre_item_add_formvalidation')
    //       );
-
-   if (extension_loaded('v8js')) {
-      // used only for validation of massiveactions
-      // can only be done with v8js module
-      $res = $DB->request([
-                     'SELECT'     => 'glpi_plugin_formvalidation_itemtypes.name',
-                     'FROM'       => 'glpi_plugin_formvalidation_itemtypes',
-                     'INNER JOIN' => [
-                        'glpi_plugin_formvalidation_pages' => [
-                           'FKEY' => [
-                              'glpi_plugin_formvalidation_pages' => 'itemtypes_id', 
-                              'glpi_plugin_formvalidation_itemtypes' => 'id'
-                           ]
+   
+   $res = $DB->request([
+                  'SELECT'     => 'glpi_plugin_formvalidation_itemtypes.name',
+                  'FROM'       => 'glpi_plugin_formvalidation_itemtypes',
+                  'INNER JOIN' => [
+                     'glpi_plugin_formvalidation_pages' => [
+                        'FKEY' => [
+                           'glpi_plugin_formvalidation_pages' => 'itemtypes_id', 
+                           'glpi_plugin_formvalidation_itemtypes' => 'id'
                         ]
-                     ],
-          ]);
+                     ]
+                  ],
+         ]);
       foreach($res as $itemtype) {
          $PLUGIN_HOOKS['pre_item_update']['formvalidation'][$itemtype['name']] = ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'];
       }
-      //$PLUGIN_HOOKS['pre_item_update']['formvalidation'] = [
-      //           'Ticket' => ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'],
-      //           'Computer' => ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation']
-      //       ];
-   }
+   
 
    $PLUGIN_HOOKS['pre_show_item']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_pre_show_tab_formvalidation'];
 
@@ -93,6 +88,8 @@ function plugin_init_formvalidation() {
    $plug = new Plugin;
    if ($plug->isActivated('formvalidation')) {
       $PLUGIN_HOOKS['add_javascript']['formvalidation'] = ['js/formvalidation.js'];
+      $PLUGIN_HOOKS['add_javascript']['formvalidation'][] = 'js/jsloader.js';
+      $_SESSION['glpi_js_toload']['formvalidation'] = ['lib/moment.min.js'];
       $PLUGIN_HOOKS['add_css']['formvalidation'] = ['css/formvalidation.css'];
    }
 }

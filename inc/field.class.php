@@ -130,8 +130,9 @@ class PluginFormvalidationField extends CommonDBTM {
          switch ($item->getType()) {
             case 'PluginFormvalidationForm' :
                if ($_SESSION['glpishow_count_on_tabs']) {
-                  $nb = $dbu->countElementsInTable('glpi_plugin_formvalidation_fields',
-                                             "`forms_id` = '".$item->getID()."'");
+                  //$nb = $dbu->countElementsInTable('glpi_plugin_formvalidation_fields',
+                  //                           "`forms_id` = '".$item->getID()."'");
+                  $nb = $dbu->countElementsInTable('glpi_plugin_formvalidation_fields', ['forms_id' => $item->getID()]);
                }
                return self::createTabEntry(PluginFormvalidationField::getTypeName(Session::getPluralNumber()), $nb);
 

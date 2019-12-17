@@ -320,6 +320,7 @@ class PluginFormvalidationPage extends CommonDBTM {
       global $DB;
       $nbPagesUpdate = 0;
       $oldNew = [];//array();
+      $cptWarning = 0;
       if (!isset($_FILES["json_file"]) || ($_FILES["json_file"]["size"] == 0)) {
          return false;
       }//else{
@@ -412,10 +413,17 @@ class PluginFormvalidationPage extends CommonDBTM {
                   'Error updating pages field into glpi_plugin_formvalidation_pages ' . $DB->error()
                );
             } else {
+               $query = $DB->request('glpi_plugin_formvalidation_pages', ['name' => $p->{'name'}]);
+               if(count($query)) {
+                  $cptWarning++;
+                  $name = $p->{'name'}.date('Ymd H:i:s');
+               }else {
+                  $name = $p->{'name'};
+               }
                if (!$DB->insert(
                   'glpi_plugin_formvalidation_pages',
                   [
-                     'name'         => $DB->escape($p->{'name'}),
+                     'name'         => $DB->escape($name),
                      'entities_id'  => $p->{'entities_id'},
                      'itemtypes_id' => $lastIdItemTypes,
                      'is_recursive' => $p->{'is_recursive'},
@@ -617,11 +625,19 @@ class PluginFormvalidationPage extends CommonDBTM {
                ERROR
             );
          } else {
-            Session::addMessageAfterRedirect(
-                  sprintf(__('%d pages updated !'), $nbPagesUpdate),
+            if($cptWarning > 0) {
+               Session::addMessageAfterRedirect(
+                  sprintf(__('You have created %d page(s) with an existing name but with a different GUID'), $cptWarning),
                   true,
-                  INFO
+                  WARNING
                );
+            }else {
+               Session::addMessageAfterRedirect(
+                     sprintf(__('%d pages updated !'), $nbPagesUpdate),
+                     true,
+                     INFO
+                  );
+            }
          }
       }
    }

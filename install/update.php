@@ -15,6 +15,16 @@ function formvalidation_update() {
          );
       $migration->executeMigration();
    }
+
+   if(!$DB->fieldExists('glpi_plugin_formvalidation_configs', 'js_path')) {
+      $path = '';
+      $migration->addField(
+            'glpi_plugin_formvalidation_configs',
+            'js_path',
+            'string'
+         );
+      $migration->executeMigration();
+   }
    /***********************/
 
    /*** UPDATE ***/
