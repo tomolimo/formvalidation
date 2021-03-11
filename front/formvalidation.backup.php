@@ -19,10 +19,10 @@ if ($action != "export") {
 switch ($action) {
    case 'export':
       if (isset($_GET['filename'])) {
-         $file = "../../../files/_tmp/".$_GET['filename'];
+         $file = GLPI_TMP_DIR."/".$_GET['filename'];
          if (file_exists($file)) {
             header('Content-type: application/json');
-            header('Content-Disposition: attachment; filename="'.basename($file).'"');
+            header('Content-Disposition: attachment; filename="'.$_GET['filename'].'"');
             readfile($file);
          }
       }

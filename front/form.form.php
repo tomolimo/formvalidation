@@ -48,9 +48,6 @@ if (isset($_POST["purge"])) {
    $form->check($_POST["id"], PURGE);
    $form->delete($_POST, 1);
 
-   //Event::log($_POST["id"], "change", 4, "maintain",
-   //           //TRANS: %s is the user login
-   //           sprintf(__('%s purges an item'), $_SESSION["glpiname"]));
    $form->redirectToList();
 
 } else if (isset($_POST["update"])) {
@@ -59,9 +56,6 @@ if (isset($_POST["purge"])) {
    $_POST["formula"] = Html::entity_decode_deep( $_POST["formula"] );
 
    $form->update($_POST);
-   //Event::log($_POST["id"], "change", 4, "maintain",
-   //           //TRANS: %s is the user login
-   //           sprintf(__('%s updates an item'), $_SESSION["glpiname"]));
 
    Html::back();
 

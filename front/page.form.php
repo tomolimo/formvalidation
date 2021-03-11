@@ -56,7 +56,7 @@ if (isset($_POST["add"])) {
 
 } else if (isset($_POST["purge"])) {
    $page->check($_POST["id"], PURGE);
-   $page->delete($_POST, 1);
+   $page->delete($_POST, true);
 
    $page->redirectToList();
 

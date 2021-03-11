@@ -13,7 +13,7 @@ class PluginFormvalidationHook extends CommonDBTM {
    /**
     * Summary of plugin_post_item_form_formvalidation
     * @param mixed $parm mixed
-    * @return mixed
+    * @return
     */
    static public function plugin_post_item_form_formvalidation($parm) {
       if ($parm['item']->getType() == 'TicketSatisfaction') {
@@ -24,100 +24,16 @@ class PluginFormvalidationHook extends CommonDBTM {
       }
    }
 
-   const HELPER_FUNCTIONS = <<<'EOT'
-    //------------------------------------------
-    // helper function to verify if a string
-    // is really a date
-    // uses the datepicker JQuery plugin
-    //------------------------------------------
-    function isValidDate(string) {
-      try {
-         if (string.length == 0) {
-            return false;
-         }
-         $.datepicker.parseDate($('.hasDatepicker').datepicker('option', 'dateFormat'), string);
-         return true;
-      } catch (e) {
-         return false;
-      }
-   }
-
-    //------------------------------------------
-    // helper function to verify a if a string
-    // is really a time from 00:00[:00] to 23:59[:59]
-    //------------------------------------------
-    function isValidTime(str) {
-        return /^(?:[0-1]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(str);
-    }
-
-    //------------------------------------------
-    // helper function to verify a if a string
-    // is really an integer
-    //------------------------------------------
-    function isValidInteger(str) {
-        return /^\d+$/.test(str);
-    }
-
-    //------------------------------------------
-    // helper function to count words in a given string
-    // returns quantity of words
-    //------------------------------------------
-    function countWords(str) {
-        return str.split(/\W+/).length;
-    }
-
-    //------------------------------------------
-    // helper function to verify a if a string
-    // is really an IPV4 address
-    // uses the datapicker JQuery plugin
-    //------------------------------------------
-    function isValidIPv4(ipaddress) {
-        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress) ;
-    }
-
-
-    //------------------------------------------
-    // helper function to verify a if a string
-    // is really an IPV6 address
-    // uses the datapicker JQuery plugin
-    //------------------------------------------
-    function isValidIPv6(ipaddress) {
-        return /^((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4}))*::((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4}))*|((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4})){7}$/.test(ipaddress);
-    }
-
-    //------------------------------------------
-    // helper function to verify a if a string
-    // is really an email address
-    // will use the input type=email if it exists (HTML5)
-    // otherwise will use a basic verification.
-    //------------------------------------------
-    function isValidEmail(value) {
-        var input = document.createElement("input");
-
-        input.type = "email";
-        input.value = value;
-
-        return typeof input.checkValidity == "function" ? input.checkValidity() : /^\S+@\S+\.\S+$/.test(value);
-    }
-
-    //------------------------------------------
-    // helper function to verify a if a string
-    // is really a MAC address
-    //------------------------------------------
-    function isValidMacAddress(str) {
-        return /^[\da-f]{2}([:-])(?:[\da-f]{2}\1){4}[\da-f]{2}$/i.test(str);
-    }
-
-EOT;
-
    /**
     * Summary of plugin_pre_item_update_formvalidation
     * @param mixed $parm the object that is going to be updated
-    * @return mixed
+    * @return
     */
    static public function plugin_pre_item_update_formvalidation($parm) {
       global $DB;
 
+      $config = PluginFormvalidationConfig::getInstance();
+      $path = $config->fields["js_path"];
       // to be executed only for massive actions
       if (strstr($_SERVER['PHP_SELF'], "/front/massiveaction.php")) {
          $ret=[];
@@ -137,8 +53,20 @@ EOT;
          $fieldtitles = [];
 
          $query2 =    [
-                        'SELECT DISTINCT'    => 'glpi_plugin_formvalidation_forms.id',
-                        'FIELDS'  => ['glpi_plugin_formvalidation_forms.name', 'glpi_plugin_formvalidation_forms.pages_id', 'glpi_plugin_formvalidation_forms.css_selector', 'glpi_plugin_formvalidation_forms.is_createitem', 'glpi_plugin_formvalidation_forms.is_active', 'glpi_plugin_formvalidation_forms.use_for_massiveaction', 'glpi_plugin_formvalidation_forms.formula', 'glpi_plugin_formvalidation_forms.comment', 'glpi_plugin_formvalidation_forms.date_mod', 'glpi_plugin_formvalidation_forms.guid'],
+                        'SELECT'    => [
+                           'glpi_plugin_formvalidation_forms.id',
+                           'glpi_plugin_formvalidation_forms.name',
+                           'glpi_plugin_formvalidation_forms.pages_id',
+                           'glpi_plugin_formvalidation_forms.css_selector',
+                           'glpi_plugin_formvalidation_forms.is_createitem',
+                           'glpi_plugin_formvalidation_forms.is_active',
+                           'glpi_plugin_formvalidation_forms.use_for_massiveaction',
+                           'glpi_plugin_formvalidation_forms.formula',
+                           'glpi_plugin_formvalidation_forms.comment',
+                           'glpi_plugin_formvalidation_forms.date_mod',
+                           'glpi_plugin_formvalidation_forms.guid'
+                           ],
+                        'DISTINCT'  => true,
                         'FROM'      => 'glpi_plugin_formvalidation_forms',
                         'LEFT JOIN' => [
                            'glpi_plugin_formvalidation_fields' => [
@@ -167,19 +95,19 @@ EOT;
                            ]
                         ]
                   ];
-         
+
          if (!empty($input)) {
             $key = array_keys($input);
             $query2['WHERE']['AND']["glpi_plugin_formvalidation_fields.css_selector_value"] = ['LIKE', '%'.$key[0].'%'];
          }
 
          foreach ($DB->request( $query2) as $form) {
-            foreach ($DB->request('glpi_plugin_formvalidation_fields', ['forms_id' => $form['id']])  as $field) {
+            foreach ($DB->request('glpi_plugin_formvalidation_fields', ['AND' => ['forms_id' => $form['id'], 'is_active' => 1]])  as $field) {
                $matches = [];
                if (preg_match('/\[(name|id\^)=\\\\{0,1}"(?<name>[a-z_\-0-9]+)\\\\{0,1}"\]/i', $field['css_selector_value'], $matches)) {
-                  $fieldnames[$field['id']]=$matches['name'];
-                  $formulas[$field['id']]=($field['formula'] ? $field['formula'] : '#>0 || #!=""');
-                  $fieldtitles[$field['id']]=$field['name'];
+                  $fieldnames[$field['id']] = trim($matches['name'], "_");
+                  $formulas[$field['id']] = ($field['formula'] ? $field['formula'] : '#>0 || #!=""');
+                  $fieldtitles[$field['id']] = $field['name'];
                }
             }
 
@@ -196,21 +124,40 @@ EOT;
                   } else {
                      $regex = '/#'.$valnum.'\b/i';
                   }
-                  //$formulaJS[$fieldnum] = preg_replace( $regex, '"'.Toolbox::addslashes_deep( $val ).'"', $formulaJS[$fieldnum] ) ;
-                  $formulaJS[$fieldnum] = preg_replace( $regex, "PHP.val[$valnum]", $formulaJS[$fieldnum] );
+                  $formulaJS[$fieldnum] = preg_replace( $regex, '"'.$values[$valnum].'"', $formulaJS[$fieldnum] );
                }
             }
 
-            $v8 = new V8Js();
-            $v8->val = $values;
             $ret=[];
+            $helpers = file_get_contents(__DIR__ . "/../js/helpers_function.js.tpl");
+            $helpers = str_replace('$dateFormat', 'YYYY-MM-DD', $helpers);
+            $moment  = file_get_contents(GLPI_ROOT."/lib/moment.min.js");
             foreach ($formulaJS as $index => $formula) {
                try {
-                  if (!$v8->executeString(self::HELPER_FUNCTIONS."
-                                       exec = $formula;
-                                       " ) ) {
-                     Session::addMessageAfterRedirect( __('Mandatory fields or wrong value: ').__($fieldtitles[$index]), true, ERROR );
-                     $ret[]=$fieldnames[$index];
+                  if (extension_loaded('v8js')) {
+                     $v8 = new V8Js();
+                     if (!$v8->executeString($moment."\n".$helpers."\n
+                        exec = $formula;" )
+                        ) {
+                        Session::addMessageAfterRedirect( __('Mandatory fields or wrong value: ').__($fieldtitles[$index]), true, ERROR );
+                        $ret[] = $fieldnames[$index];
+                     }
+                  } else {
+                     if (file_exists($path)) {
+                        $tmpfile = tempnam(GLPI_ROOT.'/files/_tmp', 'tmp');
+                        $handle = fopen($tmpfile, "w");
+                        fwrite($handle, "var moment = require('../../lib/moment.min.js');\n".$helpers."\nif($formula){console.log(1);}else{console.log(0);}");
+                        fclose($handle);
+                        $valid = exec("\"$path\" \"$tmpfile\"");
+                        if ($valid == 0 || is_null($valid)) {
+                           Session::addMessageAfterRedirect( __('Mandatory fields or wrong value: ').__($fieldtitles[$index]), true, ERROR );
+                           $ret[] = $fieldnames[$index];
+                        }
+                        unlink($tmpfile);
+                     } else {
+                        Session::addMessageAfterRedirect( __('The field was not updated because node.js or v8js are not installed/enabled. Contact your system administrator'), true, ERROR );
+                        $ret[] = $fieldnames[$index];
+                     }
                   }
                } catch (Exception $ex) {
                   Session::addMessageAfterRedirect( __('Error: ').__($ex->message), false, ERROR );

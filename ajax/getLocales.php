@@ -50,14 +50,10 @@ if (!isset($LANG['plugin_formvalidation'])) {
 }
 
 // JSON encode all strings that are needed in formvalidation.js
-$localization = [
-//   'job' => array( 44 => "LANG['job'][44]" ),
-//                        'common' => array( 17 => "LANG['common'][17]",
-//                                           36 => "LANG['common'][36]")
-                     ];
+$localization = [];
 
 // add plugin own language strings to $localization
 $localization['plugin_formvalidation'] = $LANG['plugin_formvalidation'];
 
-echo json_encode( $localization, JSON_HEX_APOS | JSON_HEX_QUOT );
+echo json_encode($localization, JSON_HEX_APOS | JSON_HEX_QUOT);
 

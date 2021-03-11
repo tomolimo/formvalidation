@@ -15,6 +15,15 @@ function formvalidation_update() {
          );
       $migration->executeMigration();
    }
+
+   if (!$DB->fieldExists('glpi_plugin_formvalidation_configs', 'js_path')) {
+      $migration->addField(
+            'glpi_plugin_formvalidation_configs',
+            'js_path',
+            'string'
+         );
+      $migration->executeMigration();
+   }
    /***********************/
 
    /*** UPDATE ***/
@@ -180,61 +189,17 @@ function formvalidation_update() {
       }
    }
 
-   /***** update data 0.5.2 ******/
-   /* update value guid field */
-   if ($DB->fieldExists('glpi_plugin_formvalidation_itemtypes', 'guid', false)) {
-      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/".$obj[0]."/".time()."/".rand()."/";
-      foreach ($DB->request('glpi_plugin_formvalidation_itemtypes', ['guid' => ""]) as $row) {
-         $guid =  $guid."".$row['id'];
-         $id = $row['id'];
-         $DB->updateOrDie(
-            'glpi_plugin_formvalidation_itemtypes',
-            ['guid' => md5($guid)],
-            ['id' => $id],
-            'Error updating value into glpi_plugin_formvalidation_itemtypes'
-         );
-      }
-   }
-   /* update value guid field */
-   if ($DB->fieldExists('glpi_plugin_formvalidation_pages', 'guid', false)) {
-      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/".$obj[1]."/".time()."/".rand()."/";
-      foreach ($DB->request('glpi_plugin_formvalidation_pages', ['guid'=>""]) as $row) {
-         $guid =  $guid."".$row['id'];
-         $id = $row['id'];
-         $DB->updateOrDie(
-            'glpi_plugin_formvalidation_pages',
-            ['guid' => md5($guid)],
-            ['id' => $id],
-            'Error updating value into glpi_plugin_formvalidation_pages'
-         );
-      }
-   }
-   /* Update value guid field */
-   if ($DB->fieldExists('glpi_plugin_formvalidation_forms', 'guid', false)) {
-      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/".$obj[2]."/".time()."/".rand()."/";
-      foreach ($DB->request('glpi_plugin_formvalidation_forms', ['guid' => ""]) as $row) {
-         $guid =  $guid."".$row['id'];
-         $id = $row['id'];
-         $DB->updateOrDie(
-            'glpi_plugin_formvalidation_forms',
-            ['guid' => md5($guid)],
-            ['id' => $id],
-            'Error updating value into glpi_plugin_formvalidation_forms'
-         );
-      }
-   }
-   /* Update value guid field */
-   if ($DB->fieldExists('glpi_plugin_formvalidation_fields', 'guid', false)) {
-      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/".$obj[3]."/".time()."/".rand()."/";
-      foreach ($DB->request('glpi_plugin_formvalidation_fields', ['guid' => ""]) as $row) {
-         $guid =  $guid."".$row['id'];
-         $id = $row['id'];
-         $DB->updateOrDie(
-            'glpi_plugin_formvalidation_fields',
-            ['guid' => md5($guid)],
-            ['id' => $id],
-            'Error updating value into glpi_plugin_formvalidation_fields'
-         );
+   if ($DB->tableExists("glpi_plugin_formvalidation_fields")) {
+      $oldFormula = ['isValidDate', 'isValidInteger', 'countWords', 'isValidIPv4', 'isValidIPv6', 'isValidEmail', 'isValidMacAddress'];
+      $newFormula = ['FVH.isValidDate', 'FVH.isValidInteger', 'FVH.countWords', 'FVH.isValidIPv4', 'FVH.isValidIPv6', 'FVH.isValidEmail', 'FVH.isValidMacAddress'];
+      $datas = $DB->query("SELECT id, formula FROM glpi_plugin_formvalidation_fields ");
+      if ($DB->numrows($datas) > 0) {
+         while ($row = $DB->fetch_assoc($datas)) {
+            if ($row['formula'] != null) {
+               $res = str_replace($oldFormula, $newFormula, $row['formula']);
+               $DB->query("UPDATE glpi_plugin_formvalidation_fields SET formula = '".$res."' WHERE id = ".$row['id']);
+            }
+         }
       }
    }
 }

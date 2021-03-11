@@ -13,13 +13,13 @@ class PluginFormvalidationItemtype extends CommonDropdown {
       return false;
    }
 
-   static function getTypeName($nb=0) {
+   static function getTypeName($nb = 0) {
       return _n('Item Type', 'Item Types', $nb, 'formvalidation');
    }
-   
-   function showForm($id = null,$options = ['candel'=>false]) {
+
+   function showForm($id = null, $options = ['candel'=>false]) {
       global $DB;
-      if(!$id) {
+      if (!$id) {
          $id = -1;
       }
       $this->initForm($id);
