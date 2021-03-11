@@ -14,5 +14,5 @@ See : https://github.com/tomolimo/formvalidation/wiki
 See wiki pages https://github.com/tomolimo/formvalidation/wiki
 
 ## GLPI compatibility:
-Tested with 0.85, 0.90, 9.1, 9.2, 9.3 and 9.4
+Tested with 0.85, 0.90, 9.1, 9.2, 9.3, 9.4 and 9.5
 

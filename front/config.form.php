@@ -1,8 +1,6 @@
 <?php
 
 include ("../../../inc/includes.php");
-// No autoload when plugin is not activated
-//require_once('../inc/config.class.php');
 
 $config = new PluginFormvalidationConfig();
 if (isset($_REQUEST["update"])) {

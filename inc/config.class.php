@@ -49,7 +49,6 @@ class PluginFormvalidationConfig extends CommonDBTM {
 
 
    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
-      global $LANG;
 
       if ($item->getType()=='Config') {
          return "Formvalidation";
@@ -67,25 +66,25 @@ class PluginFormvalidationConfig extends CommonDBTM {
    }
 
    static function showConfigForm($item) {
-      global $LANG, $DB;
+      global $DB;
 
       $config = self::getInstance();
 
       $config->showFormHeader();
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".__("css mandatory","formvalidation")."</td><td colspan=2>";
+      echo "<td colspan=2>".__("css mandatory", "formvalidation")."</td><td colspan=2>";
       echo "<input type='text' name='css_mandatory' value='".$config->fields['css_mandatory']."'>";
       echo "</td></tr>\n";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".__("css error","formvalidation")."</td><td colspan=2>";
+      echo "<td colspan=2>".__("css error", "formvalidation")."</td><td colspan=2>";
       echo "<input type='text' name='css_error' value='".$config->fields['css_error']."'>";
       echo "</td></tr>\n";
 
-      if(!extension_loaded('v8js')) {
+      if (!extension_loaded('v8js')) {
          echo "<tr class='tab_bg_1'>";
-         echo "<td colspan=2>".__("nodejs path for massive action validation","formvalidation")."</td><td colspan=2>";
+         echo "<td colspan=2>".__("nodejs path for massive action validation", "formvalidation")."</td><td colspan=2>";
          echo "<input type='text' name='js_path' value='".$config->fields['js_path']."'>";
          echo "</td></tr>\n";
       }

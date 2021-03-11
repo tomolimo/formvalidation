@@ -30,7 +30,6 @@ class PluginFormvalidationField extends CommonDBTM {
     * @return string translation
     */
    static function getTypeName($nb = 0) {
-        global $LANG;
 
       if ($nb>1) {
          return __('Fields', 'formvalidation');
@@ -43,7 +42,6 @@ class PluginFormvalidationField extends CommonDBTM {
     * @return array of search options
     */
    function rawSearchOptions() {
-      global $LANG;
 
       $tab = [];
 
@@ -111,11 +109,7 @@ class PluginFormvalidationField extends CommonDBTM {
       return $tab;
    }
 
-    /**
-     * @since version 0.85
-     *
-     * @see CommonGLPI::getTabNameForItem()
-     **/
+
    /**
     * Summary of getTabNameForItem
     * @param CommonGLPI $item
@@ -172,18 +166,14 @@ class PluginFormvalidationField extends CommonDBTM {
     * @param mixed                    $ids
     * @param mixed                    $crit
     * @param mixed                    $tree
-    * @return mixed
+    * @return
     */
    static function getDataForForm(PluginFormvalidationForm $form, &$members, &$ids, $crit = '', $tree = 0) {
       global $DB;
 
-      $entityrestrict = 0;
-
-      $restrict = "='".$form->getID()."'";
-
       $res = $DB->request([
-                     'SELECT DISTINCT' => 'glpi_plugin_formvalidation_fields.id',
-                     'FIELDS'          => [
+                     'SELECT'   => [
+                        'glpi_plugin_formvalidation_fields.id',
                         'glpi_plugin_formvalidation_fields.id AS linkID',
                         'glpi_plugin_formvalidation_fields.name',
                         'glpi_plugin_formvalidation_fields.css_selector_value',
@@ -193,31 +183,14 @@ class PluginFormvalidationField extends CommonDBTM {
                         'glpi_plugin_formvalidation_fields.show_mandatory_if',
                         'glpi_plugin_formvalidation_fields.forms_id'
                      ],
-                     'FROM'            => 'glpi_plugin_formvalidation_fields',
-                     'WHERE'           => [
+                     'DISTINCT' => true,
+                     'FROM'     => 'glpi_plugin_formvalidation_fields',
+                     'WHERE'    => [
                         'glpi_plugin_formvalidation_fields.forms_id' => $form->getID()
                      ],
-                     'ORDER'           => 'glpi_plugin_formvalidation_fields.id'
+                     'ORDER'    => 'glpi_plugin_formvalidation_fields.id'
          ]);
-      //// All group members
-      //$query = "SELECT DISTINCT `glpi_plugin_formvalidation_fields`.`id`,
-      //                 `glpi_plugin_formvalidation_fields`.`id` AS linkID,
-      //                 `glpi_plugin_formvalidation_fields`.`name`,
-      //                 `glpi_plugin_formvalidation_fields`.`css_selector_value`,
-      //                 `glpi_plugin_formvalidation_fields`.`formula`,
-      //                 `glpi_plugin_formvalidation_fields`.`is_active`,
-      //                 `glpi_plugin_formvalidation_fields`.`show_mandatory`,
-      //                 `glpi_plugin_formvalidation_fields`.`show_mandatory_if`,
-      //                 `glpi_plugin_formvalidation_fields`.`forms_id`
-      //          FROM `glpi_plugin_formvalidation_fields`
-      //          WHERE `glpi_plugin_formvalidation_fields`.`forms_id` $restrict
-      //          ORDER BY `glpi_plugin_formvalidation_fields`.`id`";
-
-      //$result = $DB->query($query);
-
-      //if ($DB->numrows($result) > 0) {
-      //   while ($data=$DB->fetch_assoc($result)) {
-      foreach($res as $data) {
+      foreach ($res as $data) {
          // Add to display list, according to criterion
          if (empty($crit) || $data[$crit]) {
             $members[] = $data;
@@ -227,9 +200,7 @@ class PluginFormvalidationField extends CommonDBTM {
             $ids[]  = $data['id'];
          }
       }
-      //}
 
-      return $entityrestrict;
    }
 
    /**
@@ -240,15 +211,15 @@ class PluginFormvalidationField extends CommonDBTM {
    /**
     * Summary of showForForm
     * @param PluginFormvalidationForm $form
-    * @return boolean
+    * @return
     */
    static function showForForm(PluginFormvalidationForm $form) {
-      global $DB, $LANG, $CFG_GLPI;
+      global $DB, $CFG_GLPI;
 
       $ID = $form->getID();
       if (!PluginFormvalidationField::canView()
           || !$form->can($ID, READ)) {
-         return false;
+         return;
       }
 
       // Have right to manage members
@@ -259,7 +230,7 @@ class PluginFormvalidationField extends CommonDBTM {
       $ids     = [];
 
       // Retrieve member list
-      $entityrestrict = self::getDataForForm($form, $used, $ids);
+      self::getDataForForm($form, $used, $ids);
 
       $number = count($used);
 
@@ -373,7 +344,7 @@ class PluginFormvalidationField extends CommonDBTM {
     * @param mixed $options
     */
    function showForm ($ID, $options = ['candel'=>false]) {
-      global $DB, $CFG_GLPI, $LANG;
+      global $DB, $CFG_GLPI;
 
       if ($ID > 0) {
          $this->check($ID, READ);

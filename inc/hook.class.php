@@ -13,7 +13,7 @@ class PluginFormvalidationHook extends CommonDBTM {
    /**
     * Summary of plugin_post_item_form_formvalidation
     * @param mixed $parm mixed
-    * @return mixed
+    * @return
     */
    static public function plugin_post_item_form_formvalidation($parm) {
       if ($parm['item']->getType() == 'TicketSatisfaction') {
@@ -27,7 +27,7 @@ class PluginFormvalidationHook extends CommonDBTM {
    /**
     * Summary of plugin_pre_item_update_formvalidation
     * @param mixed $parm the object that is going to be updated
-    * @return mixed
+    * @return
     */
    static public function plugin_pre_item_update_formvalidation($parm) {
       global $DB;
@@ -53,8 +53,20 @@ class PluginFormvalidationHook extends CommonDBTM {
          $fieldtitles = [];
 
          $query2 =    [
-                        'SELECT DISTINCT'    => 'glpi_plugin_formvalidation_forms.id',
-                        'FIELDS'  => ['glpi_plugin_formvalidation_forms.name', 'glpi_plugin_formvalidation_forms.pages_id', 'glpi_plugin_formvalidation_forms.css_selector', 'glpi_plugin_formvalidation_forms.is_createitem', 'glpi_plugin_formvalidation_forms.is_active', 'glpi_plugin_formvalidation_forms.use_for_massiveaction', 'glpi_plugin_formvalidation_forms.formula', 'glpi_plugin_formvalidation_forms.comment', 'glpi_plugin_formvalidation_forms.date_mod', 'glpi_plugin_formvalidation_forms.guid'],
+                        'SELECT'    => [
+                           'glpi_plugin_formvalidation_forms.id',
+                           'glpi_plugin_formvalidation_forms.name',
+                           'glpi_plugin_formvalidation_forms.pages_id',
+                           'glpi_plugin_formvalidation_forms.css_selector',
+                           'glpi_plugin_formvalidation_forms.is_createitem',
+                           'glpi_plugin_formvalidation_forms.is_active',
+                           'glpi_plugin_formvalidation_forms.use_for_massiveaction',
+                           'glpi_plugin_formvalidation_forms.formula',
+                           'glpi_plugin_formvalidation_forms.comment',
+                           'glpi_plugin_formvalidation_forms.date_mod',
+                           'glpi_plugin_formvalidation_forms.guid'
+                           ],
+                        'DISTINCT'  => true,
                         'FROM'      => 'glpi_plugin_formvalidation_forms',
                         'LEFT JOIN' => [
                            'glpi_plugin_formvalidation_fields' => [
@@ -143,7 +155,7 @@ class PluginFormvalidationHook extends CommonDBTM {
                         }
                         unlink($tmpfile);
                      } else {
-                        Session::addMessageAfterRedirect( __('The field was not updated because node.js and v8js are not installed/enabled. Contact your system administrator'), true, ERROR );
+                        Session::addMessageAfterRedirect( __('The field was not updated because node.js or v8js are not installed/enabled. Contact your system administrator'), true, ERROR );
                         $ret[] = $fieldnames[$index];
                      }
                   }

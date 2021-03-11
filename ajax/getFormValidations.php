@@ -44,7 +44,7 @@ $validations['config']['editmode']=$_SESSION['glpiformvalidationeditmode'];
 
 $is_createitem = 0; // by default
 
-$obj = getItemForItemtype( $_GET['name'] );
+$obj = getItemForItemtype( $_GET['itemtype'] );
 if ($obj && method_exists($obj, 'getType')) {
    if ($_GET['id'] > 0) {
       $obj->getFromDB( $_GET['id'] );

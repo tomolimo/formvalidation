@@ -7,7 +7,9 @@ function formvalidation_install() {
 
    $DB->insertOrDie(
          'glpi_plugin_formvalidation_configs', [
-            'id'      => '1',
+            'id'            => '1',
+            'css_mandatory' => '{\"background-color\":\"lightgrey\", \"font-weight\":\"bold\"}',
+            'css_error'     => '{\"background-color\": \"red\"}'
          ],
          "Error inserting default config into glpi_plugin_formvalidation_configs "
    );

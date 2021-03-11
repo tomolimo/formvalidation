@@ -31,8 +31,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
  * @return boolean
  */
 function plugin_formvalidation_install() {
-   global $DB, $CFG_GLPI;
-   $dbu = new DbUtils();
+   global $DB;
    if (!$DB->tableExists("glpi_plugin_formvalidation_configs")) {
       // new installation
       include_once(GLPI_ROOT."/plugins/formvalidation/install/install.php");

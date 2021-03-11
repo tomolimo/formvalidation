@@ -29,7 +29,6 @@ class PluginFormvalidationPage extends CommonDBTM {
     * @return mixed
     */
    function rawSearchOptions() {
-      // global $LANG;
 
       $tab = [];
 
@@ -107,7 +106,6 @@ class PluginFormvalidationPage extends CommonDBTM {
 
 
    static function getTypeName($nb = 0) {
-      global $LANG;
 
       if ($nb>1) {
          return __('Pages', 'formvalidation');
@@ -128,8 +126,13 @@ class PluginFormvalidationPage extends CommonDBTM {
       return $ong;
    }
 
+
+   /**
+    * Summary of showForm
+    * @param  $ID
+    * @param  $options
+    */
    function showForm ($ID, $options = ['candel'=>false]) {
-      //global $DB;
 
       if ($ID > 0) {
          $this->check($ID, READ);
@@ -184,10 +187,11 @@ class PluginFormvalidationPage extends CommonDBTM {
 
    }
 
+
    /**
     * Actions done after the PURGE of the item in the database
     *
-    * @return nothing
+    * @return
     **/
    function post_purgeItem() {
       global $DB;
@@ -198,14 +202,18 @@ class PluginFormvalidationPage extends CommonDBTM {
                      $frm->getTable(),
                      ['pages_id' => $this->getID()]
             );
-      //$query = "SELECT * FROM ".$frm->getTable()." WHERE pages_id=".$this->getID();
-      //foreach ($DB->request($query) as $frmkey => $row) {
-      foreach ($res as $frmkey => $row) {
-         $frm->delete($row, 1);
+      foreach ($res as $row) {
+         $frm->delete($row, true);
       }
 
    }
 
+
+   /**
+    * Summary of showMassiveActionsSubForm
+    * @param MassiveAction $ma
+    * @return bool
+    */
    static function showMassiveActionsSubForm(MassiveAction $ma) {
 
       switch ($ma->getAction()) {
@@ -217,23 +225,41 @@ class PluginFormvalidationPage extends CommonDBTM {
       return parent::showMassiveActionsSubForm($ma);
    }
 
+
+   /**
+    * Summary of getForms
+    * @return array
+    */
    function getForms() {
       $forms = new PluginFormvalidationForm();
-      return $forms->find("pages_id='".$this->fields['id']."'");
+      return $forms->find(['pages_id' => $this->fields['id']]);
    }
 
+
+   /**
+    * Summary of getItemtypes
+    * @return array
+    */
    function getItemtypes() {
       $itemType = new PluginFormvalidationItemtype();
       $itemType_id = $this->fields['itemtypes_id'];
-      $datas = $itemType->find("id = '".$this->fields['itemtypes_id']."'");
+      $datas = $itemType->find(['id' => $this->fields['itemtypes_id']]);
       $guid = $datas[$itemType_id]['guid'];
       $datas[$guid] = $datas[$itemType_id];
       unset($datas[$itemType_id]);
       return $datas;
-      //return $itemType->find("id = '".$this->fields['itemtypes_id']."'");
    }
 
+
+   /**
+    * Summary of processMassiveActionsForOneItemtype
+    * @param MassiveAction $ma
+    * @param CommonDBTM $item
+    * @param array $ids
+    */
    static function processMassiveActionsForOneItemtype(MassiveAction $ma, CommonDBTM $item, array $ids) {
+      global $CFG_GLPI;
+
       $json = [];
       $page = new PluginFormvalidationPage();
       $name = '';
@@ -244,27 +270,34 @@ class PluginFormvalidationPage extends CommonDBTM {
                $datas = $page->fields;
                $datas["form"] = $page->getForms();
                $datas["itemtype"] = $page->getItemtypes();
-               $name .= "_".$datas['name'];
+               $name .= "-";
+               $name .= $id;
+
                foreach ($datas["form"] as $key => $form) {
                   $datas["form"][$form['guid']] = $form;
                   $fields = new PluginFormvalidationField();
                   $form_id = $form["id"];
-                  $f = $fields->find("forms_id=$form_id");
+                  $f = $fields->find(['forms_id' => $form_id]);
                   $datas["form"][$form['guid']]["fields"] = $f;
                   unset($datas["form"][$key]);
                }
                array_push($json, $datas);
+               $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_OK);
             }
             $json = json_encode($json);
             $filename = 'export_page'.$name.'.json';
-            $export = '../files/_tmp/'.$filename;
+            $export = GLPI_TMP_DIR."/$filename";
             $fichier = fopen($export, 'w+');
             fwrite($fichier, $json);
             fclose($fichier);
       }
-      $ma->itemDone($item->getType(), $ids, MassiveAction::ACTION_OK);
       $ma->setRedirect($CFG_GLPI['root_doc']."/plugins/formvalidation/front/formvalidation.backup.php?action=download&filename=$filename&itemtype=".$item->getType());
    }
+
+
+   /**
+    * Summary of post_addItem
+    */
    function post_addItem() {
       global $DB, $CFG_GLPI;
       $id = $this->fields['id'];
@@ -280,25 +313,25 @@ class PluginFormvalidationPage extends CommonDBTM {
       );
    }
 
-   //Display import button on page.php
+
+   /**
+    * Summary of titleBackup
+    * Display import button on page.php
+    */
    static function titleBackup() {
       global $CFG_GLPI;
-      $buttons = [];
-      $title   = "";
-
-      //$buttons["{$CFG_GLPI["root_doc"]}/plugins/formvalidation/front/formvalidation.backup.php?action=import"] = _x('button', 'Import');
-      //$buttons["{$CFG_GLPI["root_doc"]}/front/formvalidation.backup.php?action=export"] = _x('button', 'Export');
       $val =  _x('button', 'Import');
 
       echo "<div class='center'><table class='tab_glpi'><tr>";
       echo "<td><i class='fa fa-save fa-3x'></i></td>";
-      //foreach ($buttons as $key => $val) {
-      //   echo "<td><a class='vsubmit' href='".$key."'>".$val."</a></td>";
-      //}
       echo "<td><a class='vsubmit' href='".$CFG_GLPI["root_doc"]."/plugins/formvalidation/front/formvalidation.backup.php?action=import'>".$val."</a></td>";
       echo "</tr></table></div>";
    }
 
+
+   /**
+    * Summary of displayImportFormvalidationForm
+    */
    static function displayImportFormvalidationForm() {
 
       echo "<form name='form' method='post' action='formvalidation.backup.php' ".
@@ -316,6 +349,12 @@ class PluginFormvalidationPage extends CommonDBTM {
       Html::closeForm();
    }
 
+
+   /**
+    * Summary of processImportPage
+    * @throws Exception
+    * @return bool
+    */
    static function processImportPage() {
       global $DB;
       $nbPagesUpdate = 0;
@@ -323,8 +362,8 @@ class PluginFormvalidationPage extends CommonDBTM {
       $cptWarning = 0;
       if (!isset($_FILES["json_file"]) || ($_FILES["json_file"]["size"] == 0)) {
          return false;
-      }//else{
-      $fileInfo = new SplFileInfo($_FILES["json_file"]['name']);
+      }
+
       $file = file_get_contents($_FILES["json_file"]["tmp_name"]);
       if (!$array = json_decode($file)) {
          Session::addMessageAfterRedirect(
@@ -370,7 +409,7 @@ class PluginFormvalidationPage extends CommonDBTM {
                   )) {
                      throw new Exception('Error inserting itemtypes field into glpi_plugin_formvalidation_itemtypes ' . $DB->error());
                   } else {
-                     $lastIdItemTypes = $DB->insert_id();
+                     $lastIdItemTypes = $DB->insertId();
                   }
                }
             } // End itemtypes
@@ -396,7 +435,7 @@ class PluginFormvalidationPage extends CommonDBTM {
                      'guid'         => $p->{'guid'}
                   ],
                   [
-                     'id'           => $lastIdPages//$p->{'id'}
+                     'id'           => $lastIdPages //$p->{'id'}
                   ]
                )) {
                   throw new Exception('Error updating pages field into glpi_plugin_formvalidation_pages ' . $DB->error());
@@ -408,16 +447,16 @@ class PluginFormvalidationPage extends CommonDBTM {
                      'is_active' => 0,
                   ],
                   [
-                     'pages_id'  => $lastIdPages//$p->{'id'}
+                     'pages_id'  => $lastIdPages //$p->{'id'}
                   ],
                   'Error updating pages field into glpi_plugin_formvalidation_pages ' . $DB->error()
                );
             } else {
                $query = $DB->request('glpi_plugin_formvalidation_pages', ['name' => $p->{'name'}]);
-               if(count($query)) {
+               if (count($query)) {
                   $cptWarning++;
                   $name = $p->{'name'}.date('Ymd H:i:s');
-               }else {
+               } else {
                   $name = $p->{'name'};
                }
                if (!$DB->insert(
@@ -436,7 +475,7 @@ class PluginFormvalidationPage extends CommonDBTM {
                )) {
                   throw new Exception('Error inserting pages field into glpi_plugin_formvalidation_pages ' . $DB->error());
                } else {
-                  $lastIdPages = $DB->insert_id();
+                  $lastIdPages = $DB->insertId();
                }
             }
             foreach ($p->{'form'} as $fo) {
@@ -456,13 +495,13 @@ class PluginFormvalidationPage extends CommonDBTM {
                         'is_createItem'=> $fo->{'is_createitem'},
                         'is_active'    => $fo->{'is_active'},
                         'use_for_massiveaction' =>  $fo->{'use_for_massiveaction'},
-                        'formula'      => $fo->{'formula'},
+                        'formula'      => $DB->escape($fo->{'formula'}),
                         'comment'      => $DB->escape($fo->{'comment'}),
                         'date_mod'     => $fo->{'date_mod'},
                         'guid'         => $fo->{'guid'}
                      ],
                      [
-                        'id'           => $lastIdForms//$fo->{'id'}
+                        'id'           => $lastIdForms //$fo->{'id'}
                      ]
                   )) {
                      throw new Exception('Error updating forms fields into glpi_plugin_formvalidation_forms ' . $DB->error());
@@ -490,7 +529,7 @@ class PluginFormvalidationPage extends CommonDBTM {
                         'is_createItem'=> $fo->{'is_createitem'},
                         'is_active'    => $fo->{'is_active'},
                         'use_for_massiveaction' =>  $fo->{'use_for_massiveaction'},
-                        'formula'      => $fo->{'formula'},
+                        'formula'      => $DB->escape($fo->{'formula'}),
                         'comment'      => $DB->escape($fo->{'comment'}),
                         'date_mod'     => $fo->{'date_mod'},
                         'guid'         => $fo->{'guid'}
@@ -498,7 +537,7 @@ class PluginFormvalidationPage extends CommonDBTM {
                   )) {
                      throw new Exception('Error inserting forms fields into glpi_plugin_formvalidation_forms ' . $DB->error());
                   } else {
-                     $lastIdForms = $DB->insert_id();
+                     $lastIdForms = $DB->insertId();
                   }
                }
                //insert fields
@@ -520,8 +559,8 @@ class PluginFormvalidationPage extends CommonDBTM {
                            'css_selector_mandatorysign'  => $f->{'css_selector_mandatorysign'},
                            'is_active'                   => $f->{'is_active'},
                            'show_mandatory'              => $f->{'show_mandatory'},
-                           'show_mandatory_if'           => $f->{'show_mandatory_if'},
-                           'formula'                     => $f->{'formula'},
+                           'show_mandatory_if'           => $DB->escape($f->{'show_mandatory_if'}),
+                           'formula'                     => $DB->escape($f->{'formula'}),
                            'comment'                     => $DB->escape($f->{'comment'}),
                            'date_mod'                    => $f->{'date_mod'},
                            'guid'                        => $f->{'guid'}
@@ -547,14 +586,14 @@ class PluginFormvalidationPage extends CommonDBTM {
                            'css_selector_mandatorysign'  => $f->{'css_selector_mandatorysign'},
                            'is_active'                   => $f->{'is_active'},
                            'show_mandatory'              => $f->{'show_mandatory'},
-                           'show_mandatory_if'           => $f->{'show_mandatory_if'},
-                           'formula'                     => $f->{'formula'},
+                           'show_mandatory_if'           => $DB->escape($f->{'show_mandatory_if'}),
+                           'formula'                     => $DB->escape($f->{'formula'}),
                            'comment'                     => $DB->escape($f->{'comment'}),
                            'date_mod'                    => $f->{'date_mod'},
                            'guid'                        => $f->{'guid'}
                         ]
                      )) {
-                        $lastIdFields = $DB->insert_id();
+                        $lastIdFields = $DB->insertId();
                         //$oldNew[$f->{'id'}] = array('old'=>$f->{'id'}, 'new' => $lastIdFields);
                         $oldNew[$f->{'id'}] =  $lastIdFields;
                      } else {
@@ -576,7 +615,7 @@ class PluginFormvalidationPage extends CommonDBTM {
                            $DB->updateOrDie(
                            'glpi_plugin_formvalidation_fields',
                            [
-                              'formula' => $newFormula
+                              'formula' => $DB->escape($newFormula)
                            ],
                            [
                               'guid'     => $ftu->{'guid'}
@@ -596,7 +635,7 @@ class PluginFormvalidationPage extends CommonDBTM {
                            $DB->updateOrDie(
                               'glpi_plugin_formvalidation_fields',
                               [
-                                 'show_mandatory_if' => $newShowMandatory
+                                 'show_mandatory_if' => $DB->escape($newShowMandatory)
                               ],
                               [
                                  'guid'     => $ftu->{'guid'}
@@ -625,13 +664,13 @@ class PluginFormvalidationPage extends CommonDBTM {
                ERROR
             );
          } else {
-            if($cptWarning > 0) {
+            if ($cptWarning > 0) {
                Session::addMessageAfterRedirect(
                   sprintf(__('You have created %d page(s) with an existing name but with a different GUID'), $cptWarning),
                   true,
                   WARNING
                );
-            }else {
+            } else {
                Session::addMessageAfterRedirect(
                      sprintf(__('%d pages updated !'), $nbPagesUpdate),
                      true,

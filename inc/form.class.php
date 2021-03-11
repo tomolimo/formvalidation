@@ -25,7 +25,6 @@ class PluginFormvalidationForm extends CommonDBTM {
      * @return mixed
      */
    function rawSearchOptions() {
-      global $LANG;
 
       $tab = [];
       $tab[] = [
@@ -86,7 +85,6 @@ class PluginFormvalidationForm extends CommonDBTM {
 
 
    static function getTypeName($nb = 0) {
-      global $LANG;
 
       if ($nb>1) {
          return __('Forms', 'formvalidation');
@@ -143,80 +141,42 @@ class PluginFormvalidationForm extends CommonDBTM {
      * @param mixed                    $ids
      * @param mixed                    $crit
      * @param mixed                    $tree
-     * @return mixed
+     * @return
      */
    static function getDataForPage(PluginFormvalidationPage $page, &$members, &$ids, $crit = '', $tree = 0) {
       global $DB;
 
-      // Entity restriction for this group, according to user allowed entities
-      //if ($page->fields['is_recursive']) {
-      //   $entityrestrict = getSonsOf('glpi_entities', $page->fields['entities_id']);
+      $res = $DB->request([
+                     'SELECT' => [
+                        'glpi_plugin_formvalidation_forms.id AS id',
+                        'glpi_plugin_formvalidation_forms.id AS linkID',
+                        'glpi_plugin_formvalidation_forms.name',
+                        'glpi_plugin_formvalidation_forms.pages_id',
+                        'glpi_plugin_formvalidation_forms.css_selector',
+                        'glpi_plugin_formvalidation_forms.is_active',
+                        'glpi_plugin_formvalidation_forms.is_createitem',
+                        'glpi_plugin_formvalidation_forms.use_for_massiveaction',
+                        'glpi_plugin_formvalidation_forms.name'
+                     ],
+                     'DISTINCT' => true,
+                     'FROM'            => 'glpi_plugin_formvalidation_forms',
+                     'WHERE'           => [
+                        'glpi_plugin_formvalidation_forms.pages_id' => $page->getID()
+                     ],
+                     'ORDER'           => 'glpi_plugin_formvalidation_forms.id'
+         ]);
 
-      //   // active entity could be a child of object entity
-      //   if (($_SESSION['glpiactive_entity'] != $page->fields['entities_id'])
-      //       && in_array($_SESSION['glpiactive_entity'], $entityrestrict)) {
-      //      $entityrestrict = getSonsOf('glpi_entities', $_SESSION['glpiactive_entity']);
-      //   }
-      //} else {
-        $entityrestrict = $page->fields['entities_id'];
-      //}
-
-      //if ($tree) {
-      //   $restrict = "IN (".implode(',', getSonsOf('glpi_groups', $page->getID())).")";
-      //} else {
-        $restrict = "='".$page->getID()."'";
-      //}
-
-      // All group members
-        $res = $DB->request([
-                        'SELECT DISTINCT' => 'glpi_plugin_formvalidation_forms.id',
-                        'FIELDS'          => [
-                           'glpi_plugin_formvalidation_forms.id AS linkID',
-                           'glpi_plugin_formvalidation_forms.name',
-                           'glpi_plugin_formvalidation_forms.pages_id',
-                           'glpi_plugin_formvalidation_forms.css_selector',
-                           'glpi_plugin_formvalidation_forms.is_active',
-                           'glpi_plugin_formvalidation_forms.is_createitem',
-                           'glpi_plugin_formvalidation_forms.use_for_massiveaction',
-                           'glpi_plugin_formvalidation_forms.name'
-                        ],
-                        'FROM'            => 'glpi_plugin_formvalidation_forms',
-                        'WHERE'           => [
-                           'glpi_plugin_formvalidation_forms.pages_id' => $page->getID()
-                        ],
-                        'ORDER'           => 'glpi_plugin_formvalidation_forms.id'
-           ]);
-
-      //$query = "SELECT DISTINCT `glpi_plugin_formvalidation_forms`.`id`,
-      //                 `glpi_plugin_formvalidation_forms`.`id` AS linkID,
-      //                 `glpi_plugin_formvalidation_forms`.`name`,
-      //                 `glpi_plugin_formvalidation_forms`.`pages_id`,
-      //                 `glpi_plugin_formvalidation_forms`.`css_selector`,
-      //                 `glpi_plugin_formvalidation_forms`.`is_active`,
-      //                 `glpi_plugin_formvalidation_forms`.`is_createitem`,
-      //                 `glpi_plugin_formvalidation_forms`.`use_for_massiveaction`,
-      //                 `glpi_plugin_formvalidation_forms`.`name`
-      //          FROM `glpi_plugin_formvalidation_forms`
-      //          WHERE `glpi_plugin_formvalidation_forms`.`pages_id` $restrict
-      //          ORDER BY `glpi_plugin_formvalidation_forms`.`id`";
-
-      //$result = $DB->query($query);
-
-      //if ($DB->numrows($result) > 0) {
-      //   while ($data=$DB->fetch_assoc($result)) {
-        foreach($res as $data) {
-            // Add to display list, according to criterion
-            if (empty($crit) || $data[$crit]) {
-               $members[] = $data;
-            }
-            // Add to member list (member of sub-group are not member)
-            if ($data['pages_id'] == $page->getID()) {
-               $ids[]  = $data['id'];
-            }
+      foreach ($res as $data) {
+         // Add to display list, according to criterion
+         if (empty($crit) || $data[$crit]) {
+            $members[] = $data;
          }
-      //}
+         // Add to member list (member of sub-group are not member)
+         if ($data['pages_id'] == $page->getID()) {
+            $ids[]  = $data['id'];
+         }
+      }
 
-      return $entityrestrict;
    }
 
     /**
@@ -225,13 +185,13 @@ class PluginFormvalidationForm extends CommonDBTM {
     * @param $page  PluginFormvalidationPage object: the page
      **/
    static function showForPage(PluginFormvalidationPage $page) {
-      global $DB, $LANG, $CFG_GLPI;
+      global $DB, $CFG_GLPI;
 
       $config = PluginFormvalidationConfig::getInstance();
       $ID = $page->getID();
       if (!PluginFormvalidationForm::canView()
          || !$page->can($ID, READ)) {
-         return false;
+         return;
       }
 
       // Have right to manage members
@@ -244,7 +204,7 @@ class PluginFormvalidationForm extends CommonDBTM {
       $ids     = [];
 
       // Retrieve member list
-      $entityrestrict = self::getDataForPage($page, $used, $ids, $crit, $tree);
+      self::getDataForPage($page, $used, $ids, $crit, $tree);
 
       //if ($canedit) {
       //   self::showAddUserForm($page, $ids, $entityrestrict, $crit);
@@ -318,7 +278,7 @@ class PluginFormvalidationForm extends CommonDBTM {
          $header_end .= "<th>".__('Active')."</th>";
          $header_end .= "<th>".__('Item creation', 'formvalidation')."</th>";
          //if (extension_loaded('v8js')) {
-         if(extension_loaded('v8js') || file_exists($config->fields['js_path'])) {
+         if (extension_loaded('v8js') || file_exists($config->fields['js_path'])) {
             $header_end .= "<th>".__('Massive actions', 'formvalidation')."</th>";
          } else {
             $header_end .= "<th>".__('Massive actions (Not available as node.js and v8js are not installed/enabled)', 'formvalidation')."</th>";
@@ -400,8 +360,10 @@ class PluginFormvalidationForm extends CommonDBTM {
       return $ong;
    }
 
+
+
    function showForm ($ID, $options = ['candel'=>false]) {
-      global $DB, $CFG_GLPI, $LANG;
+      global $DB, $CFG_GLPI;
       $config = PluginFormvalidationConfig::getInstance();
       if ($ID > 0) {
          $this->check($ID, READ);
@@ -451,7 +413,7 @@ class PluginFormvalidationForm extends CommonDBTM {
       $v8js = extension_loaded('v8js');
       $node = file_exists($config->fields['js_path']);
       //if ($v8js) {
-      if($v8js ||$node) {
+      if ($v8js ||$node) {
          echo "<td >".__("Validate massive actions")."</td>";
       } else {
          echo "<td >".__("Massive actions (Will not work if node.js or v8js are not installed/enabled)")."</td>";
@@ -476,22 +438,27 @@ class PluginFormvalidationForm extends CommonDBTM {
     /**
      * Actions done after the PURGE of the item in the database
      *
-     * @return nothing
+     * @return
      **/
    function post_purgeItem() {
       global $DB;
+
       // as it is purged, then need to purge the associated fields
       // get list of fields to purge them
       $fld = new PluginFormvalidationField;
       $res = $DB->request($fld->getTable(), ['forms_id' => $this->getID()]);
-      //$query = "SELECT * FROM ".$fld->getTable()." WHERE forms_id=".$this->getID();
-      foreach ($res as $fldkey => $row) {
-         $fld->delete($row, 1);
+      foreach ($res as $row) {
+         $fld->delete($row, true);
       }
    }
 
+
+   /**
+    * Summary of post_addItem
+    */
    function post_addItem() {
-      global $DB,$CFG_GLPI;
+      global $DB, $CFG_GLPI;
+
       $id = $this->fields['id'];
       $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/form/".time()."/".rand()."/".$id;
       $DB->updateOrDie(
@@ -505,6 +472,59 @@ class PluginFormvalidationForm extends CommonDBTM {
       );
    }
 
+
+   /**
+    * Summary of processMassiveActionsForOneItemtype
+    * @param MassiveAction $ma
+    * @param CommonDBTM $item
+    * @param array $ids
+    */
+   static function processMassiveActionsForOneItemtype(MassiveAction $ma, CommonDBTM $item, array $ids) {
+      global $CFG_GLPI;
+
+      $json = [];
+      $page = new PluginFormvalidationPage();
+      $form = new self();
+      $name = '';
+      $pages = [];
+      switch ($ma->getAction()) {
+         case 'exportForm':
+            // ids are forms, but we need the page infos for each form
+            // must search for all pages in the form ids
+            foreach ($ids as $id) {
+               $form->getFromDB($id);
+               $pages_id = $form->fields['pages_id'];
+               if (!isset($pages[$pages_id])) {
+                  $page->getFromDB($pages_id);
+                  $pages[$pages_id] = $page->fields;
+                  $pages[$pages_id]['itemtype'] = $page->getItemtypes();
+               }
+
+               $pages[$pages_id]['form'][$form->fields['guid']] = $form->fields;
+
+               $fields = new PluginFormvalidationField();
+               $f = $fields->find(['forms_id' => $id]);
+               $pages[$pages_id]['form'][$form->fields['guid']]['fields'] = $f;
+            }
+
+            // build name for file
+            foreach ($pages as $page_item) {
+               $name .= "-" . $page_item['id'] . "_form";
+               foreach ($page_item['form'] as $form_item) {
+                  $name .= "-" . $form_item['id'];
+               }
+               array_push($json, $page_item);
+               $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_OK);
+            }
+            $json = json_encode($json);
+            $filename = "export_page$name.json";
+            $export = GLPI_TMP_DIR."/$filename";
+            $fichier = fopen($export, 'w+');
+            fwrite($fichier, $json);
+            fclose($fichier);
+      }
+      $ma->setRedirect($CFG_GLPI['root_doc']."/plugins/formvalidation/front/formvalidation.backup.php?action=download&filename=$filename&itemtype=".$item->getType());
+   }
 
 }
 
