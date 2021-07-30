@@ -39,7 +39,11 @@ $LANG['plugin_formvalidation']['formulaerror']="Contact your admin: an evaluatio
 // where your_text is the validation error message you want to show when validation formula is false for the field with field_id
 
 
-$LANG['plugin_formvalidation']['forms'][4][4][10]="Description must be at least 10 chars and 5 words.";
+//Name: Ticket Validations
 $LANG['plugin_formvalidation']['forms'][4][5][12]="Description must be at least 10 chars and 3 words.";
-$LANG['plugin_formvalidation']['forms'][4][6][14]="Description must be at least 10 chars and 5 words.";
+$LANG['plugin_formvalidation']['forms'][4][6][99]="Description must be at least 10 chars and 5 words.";
+
+//Name: form validation Itemtype 
+$LANG['plugin_formvalidation']['forms'][10][32][158]="File does not exist!";
+$LANG['plugin_formvalidation']['forms'][10][33][161]="File does not exist!";
 

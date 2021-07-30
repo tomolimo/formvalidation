@@ -26,15 +26,10 @@ class PluginFormvalidationItemtype extends CommonDropdown {
       $this->showFormHeader(['formtitle'=>'Item type','colspan' => 4]);
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td><label for='name'>".__('Name')."</label></td>";
+      echo "<td><label for='name'>".__('Item type name (examples: Project, Computer, ...)')."</label></td>";
       echo "<td><input type='text' name='name' value='".$this->fields['name']."'/></td>";
-      echo "</tr'>";
       echo "<tr class='tab_bg_1'>";
-      echo "<td><label for='name'>".__('Item type (example: Project)', 'formvalidation')."</label></td>";
-      echo "<td><input type='text' name='itemtype' value='".$this->fields['itemtype']."'/></td>";
-      echo "</tr>";
-      echo "<tr class='tab_bg_1'>";
-      echo "<td><label for='name'>".__('URL path part (example: /front/project.form.php)', 'formvalidation')."</label></td>";
+      echo "<td><label for='name'>".__('URL path part of the item type form (examples: /front/project.form.php, /front/computer.form.php, ...)', 'formvalidation')."</label></td>";
       echo "<td><input type='text' id='urlpath' name='URL_path_part' value='".$this->fields['URL_path_part']."'/></td>";
       echo "</tr'>";
 
@@ -46,5 +41,20 @@ class PluginFormvalidationItemtype extends CommonDropdown {
       //   });';
       //echo '</script>';
 
+   }
+   
+   function post_addItem() {
+      global $DB,$CFG_GLPI;
+      $id = $this->fields['id'];
+      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/itemtype/".time()."/".rand()."/".$id;
+      $DB->updateOrDie(
+         'glpi_plugin_formvalidation_itemtypes',
+         [
+            'guid' => md5($guid)
+         ],
+         [
+            'id'  => $id
+         ]
+      );
    }
 }
