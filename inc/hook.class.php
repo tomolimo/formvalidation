@@ -38,15 +38,13 @@ class PluginFormvalidationHook extends CommonDBTM {
       if (strstr($_SERVER['PHP_SELF'], "/front/massiveaction.php")) {
          $ret=[];
 
-         //return;
          //clean input values
          $input = $parm->input;
-         unset( $input['id'] );
-         foreach ($input as $key => $val) {
-            if (preg_match("/^_/", $key )) {
-               unset( $input[$key] );
-            }
+         unset($input['id']);
+         if (isset($input['_no_history'])) {
+            unset($input['_no_history']);
          }
+
          $itemvalues = array_merge( $parm->fields, $input );
          $formulas = [];
          $fieldnames = [];
@@ -96,10 +94,13 @@ class PluginFormvalidationHook extends CommonDBTM {
                         ]
                   ];
 
-         if (!empty($input)) {
-            $key = array_keys($input);
-            $query2['WHERE']['AND']["glpi_plugin_formvalidation_fields.css_selector_value"] = ['LIKE', '%'.$key[0].'%'];
+         // if $input is empty, then do not continue the validation
+         if (empty($input)) {
+            return;
          }
+
+         $key = array_keys($input);
+         $query2['WHERE']['AND']["glpi_plugin_formvalidation_fields.css_selector_value"] = ['LIKE', '%'.$key[0].'%'];
 
          foreach ($DB->request( $query2) as $form) {
             foreach ($DB->request('glpi_plugin_formvalidation_fields', ['AND' => ['forms_id' => $form['id'], 'is_active' => 1]])  as $field) {
@@ -113,7 +114,7 @@ class PluginFormvalidationHook extends CommonDBTM {
 
             $values=[];
             foreach ($formulas as $fieldnum => $formula) {
-               $values[$fieldnum] = ($itemvalues[$fieldnames[$fieldnum]] ? $itemvalues[$fieldnames[$fieldnum]] : "" );
+               $values[$fieldnum] = $DB->escape($itemvalues[$fieldnames[$fieldnum]] ? $itemvalues[$fieldnames[$fieldnum]] : "" );
             }
             $formulaJS=[];
             foreach ($formulas as $fieldnum => $formula) {
@@ -131,7 +132,7 @@ class PluginFormvalidationHook extends CommonDBTM {
             $ret=[];
             $helpers = file_get_contents(__DIR__ . "/../js/helpers_function.js.tpl");
             $helpers = str_replace('$dateFormat', 'YYYY-MM-DD', $helpers);
-            $moment  = file_get_contents(GLPI_ROOT."/lib/moment.min.js");
+            $moment  = file_get_contents(__DIR__ . "/../lib/moment/moment.min.js");
             foreach ($formulaJS as $index => $formula) {
                try {
                   if (extension_loaded('v8js')) {
@@ -146,7 +147,7 @@ class PluginFormvalidationHook extends CommonDBTM {
                      if (file_exists($path)) {
                         $tmpfile = tempnam(GLPI_ROOT.'/files/_tmp', 'tmp');
                         $handle = fopen($tmpfile, "w");
-                        fwrite($handle, "var moment = require('../../lib/moment.min.js');\n".$helpers."\nif($formula){console.log(1);}else{console.log(0);}");
+                        fwrite($handle, "var moment = require('".str_replace('\\', '/', __DIR__)."/../lib/moment/moment.min.js');\n".$helpers."\nif($formula){console.log(1);}else{console.log(0);}");
                         fclose($handle);
                         $valid = exec("\"$path\" \"$tmpfile\"");
                         if ($valid == 0 || is_null($valid)) {

@@ -990,11 +990,13 @@ var Formvalidation = {
             switch (this.localName) {
                case 'input':
                case 'textarea':
-                  jqValueElt = $(this);
+                   jqValueElt = $(this);
+                   var endSelectorValue = jqValueElt[0].name === "" ? jqValueElt[0].type : jqValueElt[0].name;
+                   var attr = jqValueElt[0].name ? "name" : "type";
                   field = {
                      'jq_value_elt': jqValueElt,
                      'jq_focus_elt': jqValueElt,
-                     'selector_value': jqValueElt[0].localName + '[name="' + jqValueElt[0].name + '"]'
+                     'selector_value': jqValueElt[0].localName + '['+attr+'="' + endSelectorValue + '"]'
                   };
                       break;
                case 'div':
@@ -1064,7 +1066,7 @@ if (location.href.indexOf('withtemplate=1') == -1) {
        itemtype = location.pathname.match(/(plugin)s\/(formcreator)\/front\/(form)display.php$/);
    }
    if (!itemtype) {
-       itemtype = location.pathname.match(/front\/helpdesk.public.php$/);
+      itemtype = location.pathname.match(/front\/helpdesk.public.php$/);
       if (itemtype && !location.search.match(/^\?create_ticket=1$/)) {
           itemtype = null;
       }
@@ -1075,6 +1077,13 @@ if (location.href.indexOf('withtemplate=1') == -1) {
           itemtype[0] = 'selfservice';
           itemtype[1] = 'ticket';
       }
+   }
+   if (!itemtype) {
+      itemtype = location.pathname.match(/front\/transfer.action.php$/);
+      if (itemtype) {
+         itemtype[0] = 'central';
+         itemtype[1] = 'transfer';
+      }      
    }
     // normal case
    if (!itemtype) {
