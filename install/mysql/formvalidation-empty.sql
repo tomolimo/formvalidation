@@ -2,7 +2,7 @@ CREATE TABLE `glpi_plugin_formvalidation_configs` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
 	`css_mandatory` VARCHAR(255) NOT NULL,
    `css_error` VARCHAR(255) NOT NULL,
-   `db_version` VARCHAR(255) NOT NULL DEFAULT '1.0.0',
+   `db_version` VARCHAR(255) NOT NULL DEFAULT '1.0.1',
    `js_path` VARCHAR(255),
    PRIMARY KEY (`id`)
 )

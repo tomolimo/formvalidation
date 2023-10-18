@@ -2,7 +2,7 @@
 /*
  * -------------------------------------------------------------------------
 Form Validation plugin
-Copyright (C) 2016-2020 by Raynet SAS a company of A.Raymond Network.
+Copyright (C) 2016-2023 by Raynet SAS a company of A.Raymond Network.
 
 http://www.araymond.com
 -------------------------------------------------------------------------
@@ -31,7 +31,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Original Author of file: Olivier Moron
 // ----------------------------------------------------------------------
 
-define ("PLUGIN_FORMVALIDATION_VERSION", "1.0.11");
+define ("PLUGIN_FORMVALIDATION_VERSION", "1.0.15");
 
 
 /**
