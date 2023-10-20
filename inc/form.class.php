@@ -26,6 +26,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
 */
 
+use Glpi\Application\View\TemplateRenderer;
+
 if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
@@ -99,7 +101,7 @@ class PluginFormvalidationForm extends CommonDBTM {
          'id'                 => '800',
          'table'              => 'glpi_plugin_formvalidation_pages',
          'field'              => 'name',
-         'linkfield'          => 'pages_id',
+         'linkfield'          => 'plugin_formvalidation_pages_id',
          'name'               => __('Page', 'formvalidation'),
          'massiveaction'      => false,
          'datatype'           => 'dropdown'
@@ -133,15 +135,11 @@ class PluginFormvalidationForm extends CommonDBTM {
             case 'PluginFormvalidationPage' :
                if ($_SESSION['glpishow_count_on_tabs']) {
                   $nb = $dbu->countElementsInTable('glpi_plugin_formvalidation_forms',
-                                             ['pages_id' => $item->getID()]);
+                                             ['plugin_formvalidation_pages_id' => $item->getID()]);
                }
                return self::createTabEntry(PluginFormvalidationForm::getTypeName(Session::getPluralNumber()), $nb);
 
             case 'PluginFormvalidationForm' :
-               //if ($_SESSION['glpishow_count_on_tabs']) {
-               //   $nb = countElementsInTable('glpi_plugin_formvalidation_forms',
-               //                              "`pages_id` = '".$item->getID()."'");
-               //}
                return PluginFormvalidationForm::getTypeName(Session::getPluralNumber());
          }
       }
@@ -177,7 +175,7 @@ class PluginFormvalidationForm extends CommonDBTM {
                         'glpi_plugin_formvalidation_forms.id AS id',
                         'glpi_plugin_formvalidation_forms.id AS linkID',
                         'glpi_plugin_formvalidation_forms.name',
-                        'glpi_plugin_formvalidation_forms.pages_id',
+                        'glpi_plugin_formvalidation_forms.plugin_formvalidation_pages_id',
                         'glpi_plugin_formvalidation_forms.css_selector',
                         'glpi_plugin_formvalidation_forms.is_active',
                         'glpi_plugin_formvalidation_forms.is_createitem',
@@ -187,7 +185,7 @@ class PluginFormvalidationForm extends CommonDBTM {
                      'DISTINCT' => true,
                      'FROM'            => 'glpi_plugin_formvalidation_forms',
                      'WHERE'           => [
-                        'glpi_plugin_formvalidation_forms.pages_id' => $page->getID()
+                        'glpi_plugin_formvalidation_forms.plugin_formvalidation_pages_id' => $page->getID()
                      ],
                      'ORDER'           => 'glpi_plugin_formvalidation_forms.id'
          ]);
@@ -198,7 +196,7 @@ class PluginFormvalidationForm extends CommonDBTM {
             $members[] = $data;
          }
          // Add to member list (member of sub-group are not member)
-         if ($data['pages_id'] == $page->getID()) {
+         if ($data['plugin_formvalidation_pages_id'] == $page->getID()) {
             $ids[]  = $data['id'];
          }
       }
@@ -232,47 +230,14 @@ class PluginFormvalidationForm extends CommonDBTM {
       // Retrieve member list
       self::getDataForPage($page, $used, $ids, $crit, $tree);
 
-      //if ($canedit) {
-      //   self::showAddUserForm($page, $ids, $entityrestrict, $crit);
-      //}
-
-      // Mini Search engine
-      //echo "<table class='tab_cadre_fixe'>";
-      //echo "<tr class='tab_bg_1'><th colspan='2'>".PluginFormvalidationForm::getTypeName(Session::getPluralNumber())."</th></tr>";
-      //echo "<tr class='tab_bg_1'><td class='center'>";
-      //echo _n('Criterion', 'Criteria', 1)."&nbsp;";
-      //$crits = array('name'      => __('Name'),
-      //               'is_active' => __('Active'));
-      //Dropdown::showFromArray('crit', $crits,
-      //                        array('value'               => $crit,
-      //                              'on_change'           => 'reloadTab("start=0&criterion="+this.value)',
-      //                              'display_emptychoice' => true));
-      ////if ($page->haveChildren()) {
-      ////   echo "</td><td class='center'>".__('Child groups');
-      ////   Dropdown::showYesNo('tree', $tree, -1,
-      ////                       array('on_change' => 'reloadTab("start=0&tree="+this.value)'));
-      ////} else {
-      //   $tree = 0;
-      ////}
-      //echo "</td></tr></table>";
-
       $number = count($used);
-      //$start  = (isset($_GET['start']) ? intval($_GET['start']) : 0);
-      //if ($start >= $number) {
+
         $start = 0;
-      //}
 
-      // Display results
       if ($number) {
-         echo "<div class='spaced'>";
-         //Html::printAjaxPager(sprintf(__('%1$s'), PluginFormvalidationForm::getTypeName(Session::getPluralNumber())),
-         //                     $start, $number);
-
          Session::initNavigateListItems('PluginFormvalidationForm',
-                              //TRANS : %1$s is the itemtype name,
-                              //        %2$s is the name of the item (used for headings of a list)
                                         sprintf(__('%1$s = %2$s'),
-                                                PluginFormvalidationPage::getTypeName(1), $page->getName()));
+                                        PluginFormvalidationPage::getTypeName(1), $page->getName()));
 
          if ($canedit) {
             Html::openMassiveActionsForm('mass'.__CLASS__.$rand);
@@ -282,92 +247,33 @@ class PluginFormvalidationForm extends CommonDBTM {
             Html::showMassiveActions($massiveactionparams);
          }
 
-         echo "<table class='tab_cadre_fixehov'>";
+         $massiveactionparams['ontop'] = false;
+         //$this->initForm($ID, $options);
+         echo TemplateRenderer::getInstance()->render('@formvalidation/show_page.html.twig', [
+             'rand' => $rand,
+             'action_url' => Toolbox::getItemTypeFormURL(__CLASS__),
+             'typeName' => PluginFormvalidationForm::getTypeName(1),
+             'start' => $start,
+             'number' => $number,
+             'used' => $used,
+             'form' => $form,
+             'glpi_csrf_token' => Session::getNewCSRFToken(),
+             'v8js_loaded' => extension_loaded('v8js'),
+             'session' => $_SESSION,
+             'canedit' => $canedit,
+             'allCheckboxth' => Html::getCheckAllAsCheckbox('mass'.__CLASS__.$rand),
+             '__CLASS__' => __CLASS__,
+             'Html' => new Html,
+             'Session' => new Session,
+             'massiveactionparams' => $massiveactionparams,
+             'rand' => $rand
+           ]);
 
-         $header_begin  = "<tr>";
-         $header_top    = '';
-         $header_bottom = '';
-         $header_end    = '';
-
-         if ($canedit) {
-            $header_begin  .= "<th width='10'>";
-            $header_top    .= Html::getCheckAllAsCheckbox('mass'.__CLASS__.$rand);
-            $header_bottom .= Html::getCheckAllAsCheckbox('mass'.__CLASS__.$rand);
-            $header_end    .= "</th>";
-         }
-         $header_end .= "<th>".__('ID')."</th>";
-         $header_end .= "<th>".PluginFormvalidationForm::getTypeName(1)."</th>";
-         //if ($tree) {
-         //   $header_end .= "<th>".PluginFormvalidationPage::getTypeName(1)."</th>";
-         //}
-         $header_end .= "<th>".__('CSS selector', 'formvalidation')."</th>";
-         $header_end .= "<th>".__('Active')."</th>";
-         $header_end .= "<th>".__('Item creation', 'formvalidation')."</th>";
-         //if (extension_loaded('v8js')) {
-         if (extension_loaded('v8js') || file_exists($config->fields['js_path'])) {
-            $header_end .= "<th>".__('Massive actions', 'formvalidation')."</th>";
-         } else {
-            $header_end .= "<th>".__('Massive actions (Not available as node.js and v8js are not installed/enabled)', 'formvalidation')."</th>";
-         }
-         $header_end .= "</tr>";
-         echo $header_begin.$header_top.$header_end;
-
-         //$tmpgrp = new PluginFormvalidationPage();
-
-         for ($i=$start, $j=0; ($i < $number) && ($j < $_SESSION['glpilist_limit']); $i++, $j++) {
-            $data = $used[$i];
-            $form->getFromDB($data["id"]);
-            Session::addToNavigateListItems('PluginFormvalidationForm', $data["id"]);
-
-            echo "\n<tr class='tab_bg_1'>";
-            if ($canedit) {
-               echo "<td width='10'>";
-               Html::showMassiveActionCheckBox(__CLASS__, $data["linkID"]);
-               echo "</td>";
-            }
-
-            echo "<td class='center'>";
-            echo $data['id'];
-
-            echo "</td><td>".$form->getLink();
-
-            echo "</td><td >";
-            echo $data['css_selector'];
-            echo "</td><td class='center'>";
-            Html::showCheckbox(['id'        => 'isformactive',
-                                'name'           => 'is_active',
-                                'checked'        => $data["is_active"],
-                                'readonly' => true
-                                ]);
-
-            echo "</td><td class='center'>";
-            Html::showCheckbox(['id'        => 'isformitemcreation',
-                                'name'           => 'is_createitem',
-                                'checked'        => $data["is_createitem"],
-                                'readonly' => true
-                                ]);
-
-            echo "</td><td class='center'>";
-            Html::showCheckbox([ 'id'        => 'isformuseformassiveaction',
-                                   'name'           => 'use_for_massiveaction',
-                                   'checked'        => $data["use_for_massiveaction"],
-                                   'readonly' => true
-
-                                   ]);
-
-            echo "</td></tr>";
-         }
-         echo $header_begin.$header_bottom.$header_end;
-         echo "</table>";
          if ($canedit) {
             $massiveactionparams['ontop'] = false;
             Html::showMassiveActions($massiveactionparams);
             Html::closeForm();
          }
-         //Html::printAjaxPager(sprintf(__('%1$s'), PluginFormvalidationForm::getTypeName(Session::getPluralNumber())),
-         //                     $start, $number);
-
-         echo "</div>";
       } else {
          echo "<p class='center b'>".__('No item found')."</p>";
       }
@@ -375,13 +281,10 @@ class PluginFormvalidationForm extends CommonDBTM {
 
    function defineTabs($options = []) {
 
-      //        $ong = array('empty' => $this->getTypeName(1));
       $ong = [];
       $this->addDefaultFormTab($ong);
-      //$this->addStandardTab(__CLASS__, $ong, $options);
 
       $this->addStandardTab('PluginFormvalidationField', $ong, $options);
-      //$this->addStandardTab('PluginProcessmakerProcess_Profile', $ong, $options);
 
       return $ong;
    }
@@ -402,61 +305,13 @@ class PluginFormvalidationForm extends CommonDBTM {
 
       $this->showFormHeader($options);
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td>".__("Name")."</td>";
-      echo "<td><input type='text' size='50' maxlength=250 name='name' value='".htmlentities($this->fields["name"], ENT_QUOTES)."'></td>";
-      echo "<td rowspan='5' class='middle'>".__("Comments")."</td>";
-      echo "<td class='center middle' rowspan='5'><textarea cols='40' rows='5' name='comment' >".htmlentities($this->fields["comment"], ENT_QUOTES)."</textarea></td>";
-      echo "</tr>";
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Active")."</td>";
-      echo "<td>";
-      Html::showCheckbox(['name'           => 'is_active',
-                               'checked'        => $this->fields["is_active"]
-                               ]);
-      echo "</td></tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("For item creation")."</td>";
-      echo "<td>";
-      Html::showCheckbox(['name'           => 'is_createitem',
-                               'checked'        => $this->fields["is_createitem"]
-                               ]);
-      echo "</td></tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("CSS selector", 'formvalidation')."&nbsp;:</td>";
-      echo "<td><input type='text' size='50' maxlength=200 name='css_selector' value='".htmlentities($this->fields["css_selector"], ENT_QUOTES)."'></td>";
-      echo "</tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Formula (left empty to default to <b><i>true</i></b>)", 'formvalidation')."</td>";
-      echo "<td><input type='text' size='50' maxlength=1000 name='formula' value='".htmlentities($this->fields["formula"], ENT_QUOTES)."'></td>";
-      echo "</tr>";
-
-      echo "<tr>";
-      $v8js = extension_loaded('v8js');
-      $node = file_exists($config->fields['js_path']);
-      //if ($v8js) {
-      if ($v8js ||$node) {
-         echo "<td >".__("Validate massive actions")."</td>";
-      } else {
-         echo "<td >".__("Massive actions (Will not work if node.js or v8js are not installed/enabled)")."</td>";
-      }
-      echo "<td>";
-      Html::showCheckbox(['name'    => 'use_for_massiveaction',
-                         'checked'  => $this->fields["use_for_massiveaction"],
-                         'readonly' => false
-                         ]);
-
-      echo "</td></tr>";
-
-      echo "<tr>";
-      echo "</tr>";
-
+      echo TemplateRenderer::getInstance()->render('@formvalidation/form.html.twig', [
+         'data' => $this->fields,
+         'v8js' => extension_loaded('v8js'),
+         'node' => file_exists(isset($config->fields['js_path']) ? $config->fields['js_path'] : '')
+      ]);
       $this->showFormButtons($options );
-      //$this->addDivForTabs();
 
    }
 
@@ -472,30 +327,17 @@ class PluginFormvalidationForm extends CommonDBTM {
       // as it is purged, then need to purge the associated fields
       // get list of fields to purge them
       $fld = new PluginFormvalidationField;
-      $res = $DB->request($fld->getTable(), ['forms_id' => $this->getID()]);
+      $res = $DB->request($fld->getTable(), ['plugin_formvalidation_forms_id' => $this->getID()]);
       foreach ($res as $row) {
          $fld->delete($row, true);
       }
    }
+   function prepareInputForAdd($input){
+      global $CFG_GLPI;
+      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/form/".time()."/".rand()."/";
+      $input['guid'] = md5($guid);
 
-
-   /**
-    * Summary of post_addItem
-    */
-   function post_addItem() {
-      global $DB, $CFG_GLPI;
-
-      $id = $this->fields['id'];
-      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/form/".time()."/".rand()."/".$id;
-      $DB->updateOrDie(
-         'glpi_plugin_formvalidation_forms',
-         [
-            'guid' => md5($guid)
-         ],
-         [
-            'id'  => $id
-         ]
-      );
+      return $input;
    }
 
 
@@ -519,7 +361,7 @@ class PluginFormvalidationForm extends CommonDBTM {
             // must search for all pages in the form ids
             foreach ($ids as $id) {
                $form->getFromDB($id);
-               $pages_id = $form->fields['pages_id'];
+               $pages_id = $form->fields['plugin_formvalidation_pages_id'];
                if (!isset($pages[$pages_id])) {
                   $page->getFromDB($pages_id);
                   $pages[$pages_id] = $page->fields;
@@ -529,7 +371,7 @@ class PluginFormvalidationForm extends CommonDBTM {
                $pages[$pages_id]['form'][$form->fields['guid']] = $form->fields;
 
                $fields = new PluginFormvalidationField();
-               $f = $fields->find(['forms_id' => $id]);
+               $f = $fields->find(['plugin_formvalidation_forms_id' => $id]);
                $pages[$pages_id]['form'][$form->fields['guid']]['fields'] = $f;
             }
 

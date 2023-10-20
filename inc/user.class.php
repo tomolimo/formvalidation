@@ -1,4 +1,5 @@
 <?php
+use Glpi\Application\View\TemplateRenderer;
 /*
  * -------------------------------------------------------------------------
 Form Validation plugin
@@ -79,25 +80,20 @@ class PluginFormvalidationUser extends CommonDBTM
       }
 
       echo "<form action='".$target."' method='post'>";
-      echo "<input type=hidden name=users_id value='$user_id'/>";
-      echo "<table class='tab_cadre_fixe'>";
+     
+      $html = TemplateRenderer::getInstance()->render('@formvalidation/user_config.html.twig', [
+        'data' => $this->fields,
+        'target' => $target,
+        'user_id' => $user_id,
+        'session' => $_SESSION['glpiformvalidationeditmode']
+     ]);
 
-      echo "<tr><th colspan='2'>".__('Edit mode', 'formvalidation')."</th></tr>";
+      echo $html;
 
-      echo "<tr class='tab_bg_2'>";
-      echo "<td>".__('Edit mode (valid for current session only, will be reset at next login)', 'formvalidation')." :</td><td>";
-
-      Dropdown::showYesNo('editmode', $_SESSION['glpiformvalidationeditmode'] ); //$this->fields["editmode"]);
-
-      echo "</td></tr>";
-
-      echo "<tr class='tab_bg_2'>";
-      echo "<td colspan='4' class='center'>";
-      echo "<input type='submit' name='update' class='submit' value=\"".__('Save')."\">";
-      echo "</td></tr>";
-
-      echo "</table>";
       Html::closeForm();
+
+
+
    }
 
 }

@@ -26,6 +26,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
 */
 
+use Glpi\Application\View\TemplateRenderer;
+
 if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access directly to this file");
 }
@@ -77,7 +79,7 @@ class PluginFormvalidationPage extends CommonDBTM {
          'id'                 => '803',
          'table'              => 'glpi_plugin_formvalidation_itemtypes',
          'field'              => 'name',
-         'linkfield'          => 'itemtypes_id',
+         'linkfield'          => 'plugin_formvalidation_itemtypes_id',
          'name'               => __('Associated item type'),
          'massiveaction'      => false,
          'datatype'           => 'dropdown'
@@ -140,14 +142,10 @@ class PluginFormvalidationPage extends CommonDBTM {
    }
 
    function defineTabs($options = []) {
-
-      //        $ong = array('empty' => $this->getTypeName(1));
       $ong = [];
       $this->addDefaultFormTab($ong);
-      //$this->addStandardTab(__CLASS__, $ong, $options);
 
       $this->addStandardTab('PluginFormvalidationForm', $ong, $options);
-      //$this->addStandardTab('PluginProcessmakerProcess_Profile', $ong, $options);
 
       return $ong;
    }
@@ -171,46 +169,14 @@ class PluginFormvalidationPage extends CommonDBTM {
 
       $this->showFormHeader($options);
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td>".__("Name")."&nbsp;:</td><td>";
-      //Html::autocompletionTextField($this, "name");
-      echo "<input type='text' size='50' maxlength=250 name='name' ".
-      " value=\"".htmlentities($this->fields["name"], ENT_QUOTES)."\">";
-      echo "</td>";
-      echo "<td rowspan='3' class='middle right'>".__("Comments")."&nbsp;:</td>";
-      echo "<td class='center middle' rowspan='3'><textarea cols='45' rows='5' name='comment' >".
-      htmlentities($this->fields["comment"], ENT_QUOTES)."</textarea></td></tr>";
+      $html = TemplateRenderer::getInstance()->render('@formvalidation/page_form_validation.html.twig', [
+        'data' => $this->fields,
+        'ID' => $ID
+     ]);
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Active")."&nbsp;:</td><td>";
-      Html::showCheckbox(['name'           => 'is_active',
-                                  'checked'        => $this->fields["is_active"]
-                                  ]);
-      echo "</td></tr>";
-
-      if (version_compare(GLPI_VERSION, '9.1', 'lt')) {
-         echo "<tr class='tab_bg_1'>";
-         echo "<td >".__("Child entities")."&nbsp;:</td><td>";
-         Html::showCheckbox(['name'           => 'is_recursive',
-                                      'checked'        => $this->fields["is_recursive"]
-                                      ]);
-         echo "</td></tr>";
-      }
-
-      echo "<tr>";
-      echo "<td>".__("Associated item type")." : </td>";
-      echo "<td>";
-      if ($ID > 0) {
-         echo Dropdown::getDropdownName('glpi_plugin_formvalidation_itemtypes', $this->fields["itemtypes_id"]);
-      } else {
-         Dropdown::show('PluginFormvalidationItemtype', [ 'name' => 'itemtypes_id' ]); //, array( 'name' => 'name')
-      }
-      echo "</td>";
-      echo "</tr>";
+      echo $html;
 
       $this->showFormButtons($options );
-      //$this->addDivForTabs();
-
    }
 
 
@@ -321,22 +287,13 @@ class PluginFormvalidationPage extends CommonDBTM {
    }
 
 
-   /**
-    * Summary of post_addItem
-    */
-   function post_addItem() {
-      global $DB, $CFG_GLPI;
-      $id = $this->fields['id'];
-      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/page/".time()."/".rand()."/".$id;
-      $DB->updateOrDie(
-         'glpi_plugin_formvalidation_pages',
-         [
-            'guid' => md5($guid)
-         ],
-         [
-            'id'  => $id
-         ]
-      );
+   
+   function prepareInputForAdd($input){
+      global $CFG_GLPI;
+      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/page/".time()."/".rand()."/";
+      $input['guid'] = md5($guid);
+
+      return $input;
    }
 
 
@@ -540,11 +497,10 @@ class PluginFormvalidationPage extends CommonDBTM {
                         'is_active' => 0
                      ],
                      [
-                        'forms_id' => $lastIdForms //$fo->{'id'}
+                        'forms_id' => $lastIdForms 
                      ],
                      'Error inserting pages field into glpi_plugin_formvalidation_pages ' . $DB->error()
                   );
-                  //$lastIdForms = $fo->{'id'};
                } else {
                   if (!$DB->insert(
                      'glpi_plugin_formvalidation_forms',
@@ -599,7 +555,6 @@ class PluginFormvalidationPage extends CommonDBTM {
                      } else {
                         throw new Exception('Error updating fields fields into glpi_plugin_formvalidation_fields ' . $DB->error());
                      }
-                     //$oldNew[$f->{'id'}] =  $f_id;
                   } else {
                      if ($DB->insert(
                         'glpi_plugin_formvalidation_fields',
@@ -620,7 +575,6 @@ class PluginFormvalidationPage extends CommonDBTM {
                         ]
                      )) {
                         $lastIdFields = $DB->insertId();
-                        //$oldNew[$f->{'id'}] = array('old'=>$f->{'id'}, 'new' => $lastIdFields);
                         $oldNew[$f->{'id'}] =  $lastIdFields;
                      } else {
                         throw new Exception('Error updating fields fields into glpi_plugin_formvalidation_fields ' . $DB->error());
@@ -656,7 +610,6 @@ class PluginFormvalidationPage extends CommonDBTM {
                         $newShowMandatory = $ftu->{'show_mandatory_if'};
                         foreach ($match[0] as $m) {
                            $index = str_replace("#", "", $m);
-                           //$newShowMandatory = $ftu->{'show_mandatory_if'};
                            $newShowMandatory = preg_replace( "/#$index+\b/i", "#".$oldNew[$index], $newShowMandatory );
                            $DB->updateOrDie(
                               'glpi_plugin_formvalidation_fields',
@@ -673,8 +626,7 @@ class PluginFormvalidationPage extends CommonDBTM {
                   }
                }
             }
-            //}
-            //}
+            
             $nbPagesUpdate++;
          }
          $DB->commit();

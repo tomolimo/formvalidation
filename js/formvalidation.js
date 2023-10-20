@@ -1,4 +1,5 @@
-﻿/*
+﻿
+/*
  * -------------------------------------------------------------------------
 Form Validation plugin
 Copyright (C) 2016-2023 by Raynet SAS a company of A.Raymond Network.
@@ -25,7 +26,6 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
 */
 var Formvalidation = {
-    //var self = {};
    glpiURLRoot: function () {
        var scriptName = "/plugins/formvalidation/js/formvalidation.js";
        var glpiURL = $('script[src*="' + scriptName + '"]')[0].src;
@@ -34,39 +34,17 @@ var Formvalidation = {
        return glpiURL.substr(0, pos);
    },
 
-   getUpDownDOMPath: function (pathEltSign, pathEltValue) {
-       var aEltSign = pathEltSign.split('>');
-       var aEltValue = pathEltValue.split('>');
-       var ret = { 'up': '', 'down': '' };
-       var found = false;
-       var i = 0;
-      while (aEltSign[i] === aEltValue[i]) {
-          found = true;
-          i++;
-      }
-      if (found) {
-         for (var j = 0; j < i; j++) {
-             ret.up = (ret.up == '' ? '' : ret.up + '>') + aEltSign[j];
-         }
-          ret.up = ret.up.replace(/:eq\(\d+\)/g, '');
-      }
-      for (; i < aEltSign.length; i++) {
-          ret.down = (ret.down == '' ? '' : ret.down + '>') + aEltSign[i];
-      }
-       return ret;
-   },
-
    getObjFromSelectors: function (elt, fieldData, eltName) {
        var locElt = elt;
       if (elt.prop('nodeName').toLowerCase() == 'form') {
-          locElt = elt.find('>' + fieldData.css_selector_value);
+         if (eltName == 'css_selector_mandatorysign') {
+            locElt = elt.find('>' + fieldData.css_selector_mandatorysign);
+         } else if (eltName == 'css_selector_errorsign') {
+            locElt = elt.find('>' + fieldData.css_selector_errorsign) ? elt.find('>' + fieldData.css_selector_errorsign) : elt.find('>' + fieldData.css_selector_value);
+         }
+          
       }
-      if (fieldData[eltName + '_rel'].up != '') {
-          locElt = locElt.parents(fieldData[eltName + '_rel'].up);
-      }
-      if (fieldData[eltName + '_rel'].down != '') {
-          locElt = locElt.find(fieldData[eltName + '_rel'].down);
-      }
+
        return locElt;
    },
 
@@ -81,38 +59,36 @@ var Formvalidation = {
    },
 
    alertCallback: function (msg, title, okCallback) {
-       // Dialog and its properties.
-       $('<div></div>').dialog({
-            open: function (event, ui) {
-                $(this).parent().find('.ui-dialog-titlebar-close').hide();
-                //debugger;
-                var overlay = $(this).parent().prev('.ui-widget-overlay.ui-front');
-               if (overlay.length > 0) {
-                   overlay.css("z-index", $(this).parent().css('z-index') - 1);
-               }
-                // is there another overlay just before in the DOM
-               if (overlay.prev('.ui-widget-overlay.ui-front')) {
-                   // remove it
-                   overlay.prev('.ui-widget-overlay.ui-front').remove();
-               }
-            },
-            dialogClass: 'fv-alert',
-            closeOnEscape: false,
-            close: function (event, ui) {
-                $(this).dialog('destroy').remove();
-            },
-            resizable: true,
-            modal: true,
-            title: title,
-            buttons: {
-               'Ok': function () {
-                   $(this).dialog('close');
-                  if (okCallback) {
-                      okCallback();
-                  }
-               }
-            }
-         }).html(msg);
+
+
+      var modal = "<div class=\"modal fade\" id=\"formValidationEditModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalCenterTitle\" aria-hidden=\"true\">"
+          + "<div class=\"modal-dialog modal-dialog-centered\"role=\"document\">"
+          + "<div class=\"modal-content\">"
+          + "<div class=\"modal-header\">"
+          + "<h5 class=\"modal-title\" id=\"exampleModalLongTitle\">"+ title +"</h5>"
+          + "</div >"
+          + "<div class=\"modal-body\">"
+          + "<div>" + "<br>" + msg + "</div>"
+          + "</div>"
+          + "<div class=\"modal-footer\">"
+          + "<button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Close</button>"
+          + "</div>"
+          + "</div>"
+          + "</div>"
+          + "</div>";
+
+      $('body').append(modal);
+      $('#formValidationEditModal').modal('show');
+      $('button[data-dismiss="modal"]').on('mouseup', function () {
+         $('#formValidationEditModal').modal('hide');
+      })
+      $('#formValidationEditModal').on('hidden.bs.modal', function () {
+         $(this).remove();
+      })
+      if (okCallback) {
+         okCallback();
+      }
+
    },
 
    ARRoot: '',
@@ -120,32 +96,39 @@ var Formvalidation = {
    ARV: '', // to store the validation data
    ARVAllTabs: '', // to store the complete info if needed for cross form validation references
    editModeInstalled: false,
-   myPollingIntervals: {}, // an object is better than an array when using $.each()
+   //myPollingIntervals: {}, // an object is better than an array when using $.each()
     //------------------------------------------
     // install run mode by polling the DOM for 30
     // seconds, each time there is an completed
     // ajax call
     //------------------------------------------
    installRunMode: function (event, jqXHR, ajaxOptions) {
-       setTimeout(Formvalidation.stopPolling, 30000);
-       $.each(Formvalidation.ARV.forms, function (formIndex, formData) {
-         if (formData && !(Formvalidation.myPollingIntervals['form' + formIndex])) {
-            Formvalidation.myPollingIntervals['form' + formIndex] = setInterval(function () { /*debugger; */ Formvalidation.installFormValidations(formData); }, 100);
+      var myObserver = new MutationObserver(mutationhandler);
+
+      var obsconfig = {
+         childList: true,
+         characterData: false,
+         attributes: false,
+         subtree: true,
+      };
+
+      myObserver.observe(document, obsconfig);
+      //called when an element is an to the dom
+      function mutationhandler(mutationRecords) {
+         if ($("div.ITILContent form").not('form[name="main_description"]').length > 0) {
+            $("div.ITILContent form").attr('name', 'main_description')
          }
-       });
+         $.each(Formvalidation.ARV.forms, function (formIndex, formData) {
+            if ($(formData.css_selector).length > 0 && $(formData.css_selector).not("[glpi-pluginformvalidation=true]").length > 0) {
+               Formvalidation.installFormValidations(formData);
+
+            }
+         });
+      }
+
+       
    },
-    //------------------------------------------
-    // will stop all current pollings, to prevent
-    // unusefull pollings
-    //------------------------------------------
-   stopPolling: function () {
-       $.each(Formvalidation.myPollingIntervals, function (index, val) {
-         if (val) {
-            clearInterval(val);
-            delete Formvalidation.myPollingIntervals[index];
-         }
-       });
-   },
+
 
     //------------------------------------------
     // install form validation
@@ -156,28 +139,76 @@ var Formvalidation = {
     //  formData: is the ARV.forms[x] for one form
     //------------------------------------------
    installFormValidations: function (formData) {
-       //debugger;
        var thisForm = $(formData.css_selector);
       if (thisForm.length > 0) {
           $.each(thisForm, function (formIndex, formObj) {
             if (formData.is_active == 1) {
-               formObj = $(formObj);
-               if (!formObj.attr('glpi-pluginformvalidation')) {
-                    formObj.attr('glpi-pluginformvalidation-formindex', formData.id);
-                    formObj.attr('glpi-pluginformvalidation', true); // to prevent multiple install on already installed forms
+               jqformObj = $(formObj);
+               if (!jqformObj.attr('glpi-pluginformvalidation')) {
+                    jqformObj.attr('glpi-pluginformvalidation-formindex', formData.id);
+                     jqformObj.attr('glpi-pluginformvalidation', true); // to prevent multiple install on already installed forms
 
-                    formObj.submit(formData, Formvalidation.defaultValidateForm);
+                     jqformObj.submit(formData, Formvalidation.defaultValidateForm);
+                    
                }
+                var fieldsLength = 0;
+                  $.each(formData.fields, function (fieldIndex, fieldData) {
+                     var field = thisForm.find('>' + fieldData.css_selector_value);
+
+                     if (thisForm.find('>' + fieldData.css_selector_errorsign).length > 0
+                        && field.not("[glpi-pluginformvalidation=true]").length > 0) {
+                        Formvalidation.installFieldValidations(thisForm, fieldData);
+                        if (fieldData.is_active == 1
+                           || fieldData.show_mandatory == 1) {
+                           field.attr('glpi-pluginformvalidation', true);
+                           field.attr("aria-required", "true");
+                           fieldCount++;
+                        }
+                        
+                     }
+                     fieldsLength++;
+                  });
                // then will try to find all fields for this form
-               $.each(formData.fields, function (fieldIndex, fieldData) {
-                  if (fieldData) {
-                     Formvalidation.installFieldValidations(thisForm, fieldData);
+               var myObserver = new MutationObserver(mutationhandler);
+
+               var obsconfig = {
+                  childList: true,
+                  characterData: false,
+                  attributes: false,
+                  subtree: true,
+               };
+
+               myObserver.observe(formObj, obsconfig);
+
+               var fieldCount = 0;
+               //called when an element is an to the dom
+               function mutationhandler(mutationRecords) {
+                  var fieldsLength = 0;
+                  $.each(formData.fields, function (fieldIndex, fieldData) {
+                     var field = thisForm.find('>' + fieldData.css_selector_value);
+
+                     if (thisForm.find('>' + fieldData.css_selector_errorsign).length > 0
+                        && field.not("[glpi-pluginformvalidation=true]").length > 0) {
+                        Formvalidation.installFieldValidations(thisForm, fieldData);
+                        if (fieldData.is_active == 1
+                           || fieldData.show_mandatory == 1) {
+                           field.attr('glpi-pluginformvalidation', true);
+                           field.attr("aria-required", "true");
+                           fieldCount++;
+                        }
+                        
+                     }
+                     fieldsLength++;
+                  });
+                  if (fieldCount == fieldsLength) {
+                     myObserver.disconnect();
                   }
-               });
-            }
+               }
+
+             }
+
           });
       }
-
    },
 
     //------------------------------------------
@@ -187,7 +218,6 @@ var Formvalidation = {
     //  fieldData: is the ARV.forms[x].fields[y] for one field
     //------------------------------------------
    installFieldValidations: function (thisForm, fieldData) {
-       //var thisForm = $(formObj);
        var field = thisForm.find('>' + fieldData.css_selector_value).not("[glpi-pluginformvalidation]");
       if (field.length > 0) {
           // add special class to fields to prevent multi validation
@@ -203,14 +233,9 @@ var Formvalidation = {
                     thisForm.on('change keyup click input', '[glpi-pluginformvalidation-fieldindex="' + fieldData.id + '"]', { fldId: fld.id, fldData: fld }, function (EventObject) {
                         //debugger;
                         var thisForm = $(EventObject.delegateTarget);
-                        //var errorsignField = thisForm.find('>' + EventObject.data.fldData.css_selector_errorsign);
                         var errorsignField = Formvalidation.getObjFromSelectors(thisForm, EventObject.data.fldData, 'css_selector_errorsign'); //thisForm.find('>' + EventObject.data.fldData.css_selector_value)
-                        //.parents(EventObject.data.fldData.css_selector_value_rel.up)
-                        //.find(EventObject.data.fldData.css_selector_value_rel.down);
-                        //var mandatorysignField = thisForm.find('>' + EventObject.data.fldData.css_selector_mandatorysign);
+
                         var mandatorysignField = Formvalidation.getObjFromSelectors(thisForm, EventObject.data.fldData, 'css_selector_mandatorysign');
-                        //.parents(EventObject.data.fldData.css_selector_mandatorysign_rel.up)
-                        //.find(EventObject.data.fldData.css_selector_mandatorysign_rel.down);
                         var showMandatory = eval(EventObject.data.fldData.show_mandatory_if);
                         Formvalidation.showHideMandatorySign(mandatorysignField, showMandatory);
                      if (!showMandatory) {
@@ -223,19 +248,13 @@ var Formvalidation = {
                      }
                     });
                   if (!fld.show_mandatory_if.match(/#\d+\b/g)) {
-                     //showHideMandatorySign(thisForm.find('>' + fld.css_selector_mandatorysign), eval(fld.show_mandatory_if));
                      Formvalidation.showHideMandatorySign(Formvalidation.getObjFromSelectors(thisForm, fld, 'css_selector_mandatorysign'), eval(fld.show_mandatory_if)); // .find('>' + fld.css_selector_value)
-                     //.parents( fld.css_selector_mandatorysign_rel.up).find(fld.css_selector_mandatorysign_rel.down) , eval(fld.show_mandatory_if));
+
                   }
                }
             }
-          });
-
+          }); 
          if (fieldData.is_active == 1) {
-            field.attr('glpi-pluginformvalidation', true);
-            // add special class to fields which helps disabled people to read page
-            field.attr("aria-required", "true");
-
             var mandatory_sign = fieldData.show_mandatory;
             // force show mandatory sign depending on the eval result
             if (fieldData.show_mandatory != 1 && fieldData.show_mandatory_if && !fieldData.show_mandatory_if.match(/#\d+\b/g)) {
@@ -244,13 +263,10 @@ var Formvalidation = {
 
             // toggles the mandatory sign
             // and stores 'initial text'
-            //showHideMandatorySign(thisForm.find('>' + fieldData.css_selector_mandatorysign), mandatory_sign);
             Formvalidation.showHideMandatorySign(Formvalidation.getObjFromSelectors(thisForm, fieldData, 'css_selector_mandatorysign'), mandatory_sign);    //.find('>' + fieldData.css_selector_value)
-            //.parents(fieldData.css_selector_mandatorysign_rel.up)
-            //.find(fieldData.css_selector_mandatorysign_rel.down), mandatory_sign);
             //showHideErrorSign(thisForm.find('>' + fieldData.css_selector_errorsign), true); // will be shown only if edit mode
-            Formvalidation.showHideErrorSign(Formvalidation.getObjFromSelectors(thisForm, fieldData, 'css_selector_errorsign'), true); // will be shown only if edit mode
-
+             // will be shown only if edit mode
+            Formvalidation.showHideErrorSign(Formvalidation.getObjFromSelectors(thisForm, fieldData, 'css_selector_errorsign'), true);
          }
       }
    },
@@ -346,14 +362,8 @@ var Formvalidation = {
 
           // hides the mandatory sign
           $.each(fields, function (index, field) {
-              //showHideMandatorySign($(formCss).find('>' + fieldData.css_selector_mandatorysign), false);
               Formvalidation.showHideMandatorySign(Formvalidation.getObjFromSelectors($(formCss), fieldData, 'css_selector_mandatorysign'), false); // .find('>' + fieldData.css_selector_value)
-              //.parents(fieldData.css_selector_mandatorysign_rel.up)
-              //.find(fieldData.css_selector_mandatorysign_rel.down), false);
-              //showHideErrorSign($(formCss).find('>' + fieldData.css_selector_errorsign), false);
               Formvalidation.showHideErrorSign(Formvalidation.getObjFromSelectors($(formCss), fieldData, 'css_selector_errorsign'), false); // .find('>' + fieldData.css_selector_value)
-              //.parents(fieldData.css_selector_errorsign_rel.up)
-              //.find(fieldData.css_selector_errorsign_rel.down), false);
           });
       }
    },
@@ -361,11 +371,12 @@ var Formvalidation = {
       if (Formvalidation.ARV.config && Formvalidation.ARV.config.css_mandatory && Formvalidation.ARV.config.editmode == 1) {
           // must anyway show something to inform that field is going to be validate
           $.each(errorsign_field, function (index, obj) {
-              obj = $(obj);
+             obj = $(obj);
             if (showSign) {
                obj.css($.parseJSON(Formvalidation.ARV.config.css_error));
                if (obj[0].localName != 'td') {
-                    obj.find('*').css($.parseJSON(Formvalidation.ARV.config.css_error));
+                  //obj.find('*').css($.parseJSON(Formvalidation.ARV.config.css_error));
+                  obj.css($.parseJSON(Formvalidation.ARV.config.css_error));
                }
             } else {
                 $.each($.parseJSON(Formvalidation.ARV.config.css_error), function (cssIndex, cssObj) {
@@ -393,7 +404,6 @@ var Formvalidation = {
        $.each(locEltList, function (index, obj) {
            //                    var fieldErrorSign = $(eventObject.target).find('>' + obj.css_selector_errorsign);
            var field = $(eventObject.target).find('>' + obj.css_selector_value);
-           //debugger;
          if (field.length > 0) {
             var fieldErrorSign = Formvalidation.getObjFromSelectors(field, obj, 'css_selector_errorsign'); // field.parents(obj.css_selector_errorsign_rel.up).find(obj.css_selector_errorsign_rel.down);
             if (field[0].localName == 'iframe') {
@@ -415,7 +425,7 @@ var Formvalidation = {
     //------------------------------------------
    defaultValidateForm: function (eventObject, formData = null) {
        // in case polling is not yet finished
-       Formvalidation.stopPolling();
+       //Formvalidation.stopPolling();
        // clear previous error list
        Formvalidation.clearPreviousValidationErrors(eventObject);
 
@@ -474,15 +484,10 @@ var Formvalidation = {
             if (obj.is_active == 0) {
                formulaList[index] = 'true';
             }
-         } else { // field not found in current form
-             //obj.is_active = 0; // field not found in current form
+         } else { 
              formulaList[index] = 'true';
          }
-           //if (obj.is_active == 1) {
-           //    formulaList[index] = obj.formula || defaultFormula;
-           //} else {
-           //    formulaList[index] = 'true';
-           //}
+
            var formRegex = new RegExp("#" + index + "\\b", "g");
            formFormula = formFormula.replace(formRegex, valList[index]);
        });
@@ -502,21 +507,6 @@ var Formvalidation = {
                formulaList[indexFormula] = formulaList[indexFormula].replace(fieldRegex, objVal);
            });
        });
-
-       // TODO external fields
-       // if any external fields are present in formula, then must add them into formulas
-       //$.each(formulaList, function (indexFormula, objFormula) {
-       //    var externalField = formulaList[indexFormula].match(/@[0-9]+\.[0-9]+\b/g) ;
-       //    if (externalField) {
-       //        // we have an external ref
-       //        var extForm = externalField[0].split('.')[0].replace('@', '');
-       //        var extField = externalField[0].split('.')[1];
-       //        var txtField = "$('" + ARV.forms[extForm].css_selector + "').find('[glpi-pluginformvalidation-fieldindex=\"" + extField + "\"]').first().val()";
-       //        var fieldRegex = new RegExp(externalField[0] + "\\b", "g");
-       //        formulaList[indexFormula] = formulaList[indexFormula].replace(fieldRegex, txtField);
-       //    }
-       //});
-
        // if any #xxx has not been replaced by fieldxxx.val()
        // then will collect these in order to show them in alert dialog
        var unusedVariables = [];
@@ -536,10 +526,7 @@ var Formvalidation = {
                 // or when a localized string exists, will use it
                 var field = eval(fieldListSelector[index]);
                 objErrorList[index] = obj;
-                //var locErrorMessage = '* ' + thisForm.find('>' + obj.css_selector_mandatorysign).data('initialText');  // by default
                 var locErrorMessage = '* ' + Formvalidation.getObjFromSelectors(thisForm, obj, 'css_selector_mandatorysign').data('initialText'); //thisForm.find('>' + obj.css_selector_value)
-                //.parents(fieldData.css_selector_mandatorysign_rel.up)
-                //.find(fieldData.css_selector_mandatorysign_rel.down).data('initialText');  // by default
                try {
                   if (Formvalidation.ARL.plugin_formvalidation.forms[Formvalidation.ARV.pages_id][obj.forms_id][obj.id]) {
                      locErrorMessage = '* ' + Formvalidation.ARL.plugin_formvalidation.forms[Formvalidation.ARV.pages_id][obj.forms_id][obj.id];
@@ -553,8 +540,7 @@ var Formvalidation = {
 
                    // show the focus in 'red'!
                    var focusEvent = 'click change focusin';
-                   //var fieldErrorSign = thisForm.find('>' + obj.css_selector_errorsign);
-                   var fieldErrorSign = Formvalidation.getObjFromSelectors(thisForm, obj, 'css_selector_errorsign');// thisForm.find('>' + obj.css_selector_value).parents(obj.css_selector_errorsign_rel.up).find(obj.css_selector_errorsign_rel.down);
+                   var fieldErrorSign = Formvalidation.getObjFromSelectors(thisForm, obj, 'css_selector_errorsign');
                    var fieldFocus = fieldErrorSign; // field;
                if (field[0].localName == 'iframe') {
                     fieldFocus = field.contents().find('body');
@@ -695,307 +681,328 @@ var Formvalidation = {
     //------------------------------------------
    installEditMode: function () {
       if (Formvalidation.editModeInstalled) {
-          return;
+         return;
       }
-       Formvalidation.editModeInstalled = true;
+      Formvalidation.editModeInstalled = true;
 
-       var SELECT_DISABLE = -1;
-       var SELECT_FIELD = 0;
-       var SELECT_ERRORSIGN = 1;
-       var SELECT_MANDATORYSIGN = 2;
+      var SELECT_DISABLE = -1;
+      var SELECT_FIELD = 0;
+      var SELECT_ERRORSIGN = 1;
+      var SELECT_MANDATORYSIGN = 2;
 
-       var selectMode = SELECT_FIELD; // by default
-       var defaultEditMessage = "<div style='color:red;'>Info: 'Form Validation' edit mode is ON!</div><br>";
-       var selectFieldMessage = defaultEditMessage + "<div>--&gt; Field Selection</div>";
-       var selectEscapeMessage = "<br><div>Press ESC to go back to field selection</div><br>";
-       var selectErrorSignMessage = selectFieldMessage + selectEscapeMessage + "<div>--&gt; Validation error area Selection</div>";
-       var selectMandatorySignMessage = selectErrorSignMessage + "<div>--&gt; Mandatory sign area Selection</div>";
+      var selectMode = SELECT_FIELD; // by default
+      var defaultEditMessage = "<div style='color:red;'>Info: 'Form Validation' edit mode is ON!</div><br>";
+      var selectFieldMessage = defaultEditMessage + "<div>--&gt; Field Selection</div>";
+      var selectEscapeMessage = "<br><div>Press ESC to go back to field selection</div><br>";
+      var selectErrorSignMessage = selectFieldMessage + selectEscapeMessage + "<div>--&gt; Validation error area Selection</div>";
+      var selectMandatorySignMessage = selectErrorSignMessage + "<div>--&gt; Mandatory sign area Selection</div>";
 
-       // to show a message to inform that we are in edit mode
-       $("body").append("<div id='message_editmode_is_on'></div>");
-       $('#message_editmode_is_on').dialog({
-            dialogClass: 'message_after_redirect fv-editmodeinfo',
-            minHeight: 10,
-            width: 'auto',
-            height: 'auto',
-            position: {
-               my: 'right top',
-               at: 'right-20 top',
-               of: $('#page'),
-               collision: 'none'
-            },
-            autoOpen: false,
-            create: function (event, ui) {
-                $(this).parent().find('.ui-dialog-titlebar', ui.dialog | ui).hide();
-                $(this).parent().find('.ui-dialog-titlebar-close', ui.dialog | ui).hide();
-            },
-            show: {
-               effect: 'slide',
-               direction: 'up',
-               duration: 800
-            },
-         }).html(selectFieldMessage).dialog('open');
 
-       // overlays
-       $("body").append("<div id='field-overlay'></div>");
-       $("#field-overlay")
-                   .css("opacity", 0.25)
-                   .css("background", "blue")
-                   .css("cursor", "pointer")
-                   .css("position", "absolute")
-                   .hide();
 
-       Formvalidation.initSignOverlay("errorsign-overlay", "red");
-       Formvalidation.initSignOverlay("mandatorysign-overlay", "green");
 
-       $("#field-overlay").on('mouseleave', function () {
+
+
+      // to show a message to inform that we are in edit mode
+      $(".page-body").prepend("<div class=\"toast fv show ui-draggable ui-draggable-handle \" id=\"draggable\">"
+         + "<div class=\"toast-header\">Form Validation</div>"
+         + "<div class=\"toast-body\" id=\"message_editmode_is_on\"></div>"
+         + "</div>"
+      );
+      $('.toast.fv').css({ 'z-index': 10000, 'position': 'absolute' });
+      $('.toast-body').css({ 'opacity': '70%' })
+      $('#draggable').draggable({
+         containment: 'body',
+      });
+
+      $('#message_editmode_is_on').html(selectFieldMessage);
+      // overlays
+      $("#message_editmode_is_on")
+         .css("background", "lightgrey")
+         .css("padding", "20px");
+      $("body").append("<div id='field-overlay'></div>");
+      $("#field-overlay")
+         .css("opacity", 0.25)
+         .css("background", "blue")
+         .css("cursor", "pointer")
+         .css("position", "absolute")
+         .hide();
+
+      Formvalidation.initSignOverlay("errorsign-overlay", "red");
+      Formvalidation.initSignOverlay("mandatorysign-overlay", "green");
+
+      $("#field-overlay").on('mouseleave', function () {
          if (selectMode == SELECT_FIELD) {
             $(this).hide();
          }
-       });
-       $(document).keyup(function (e) {
+      });
+      $(document).keyup(function (e) {
          if (e.which == 27) { // escape key maps to keycode `27`
             // reset mode to SELECT_FIELD
             restoreSelectMode();
             Formvalidation.hideSignOverlay("errorsign-overlay");
             Formvalidation.hideSignOverlay("mandatorysign-overlay");
          }
-       });
-       $("#field-overlay").on('mouseup', function () {
+      });
+      $("#field-overlay").on('mouseup', function () {
          if (selectMode == SELECT_FIELD) {
             // check if field is alredy under validation
             // if yes, then calls updateFieldInDB
             var fieldUnderValidation = $(this).data('fieldData').jq_value_elt.attr('glpi-pluginformvalidation');
             if (fieldUnderValidation) {
-                disableSelectMode();
-                updateFieldInDB(false);
+               disableSelectMode();
+               updateFieldInDB(false);
             } else {
-                setErrorSignSelectMode();
+               setErrorSignSelectMode();
             }
          }
-       });
+      });
 
       function setErrorSignSelectMode() {
-          selectMode = SELECT_ERRORSIGN;
-          $("#field-overlay").hide();
-          $('#message_editmode_is_on').html(selectErrorSignMessage);
+         selectMode = SELECT_ERRORSIGN;
+         $("#field-overlay").hide();
+         $('#message_editmode_is_on').html(selectErrorSignMessage);
       }
 
       function setMandatorySignSelectMode() {
-          selectMode = SELECT_MANDATORYSIGN; // go to select mandatory sign mode
-          $('#message_editmode_is_on').html(selectMandatorySignMessage);
+         selectMode = SELECT_MANDATORYSIGN; // go to select mandatory sign mode
+         $('#message_editmode_is_on').html(selectMandatorySignMessage);
       }
 
       function disableSelectMode() {
-          selectMode = SELECT_DISABLE;
-          $('#message_editmode_is_on').html(defaultEditMessage);
+         selectMode = SELECT_DISABLE;
+         $('#message_editmode_is_on').html(defaultEditMessage);
       }
 
       function restoreSelectMode() {
-          $("#field-overlay").hide();
-          selectMode = SELECT_FIELD;
-          $('#message_editmode_is_on').html(selectFieldMessage);
+         $("#field-overlay").hide();
+         selectMode = SELECT_FIELD;
+         $('#message_editmode_is_on').html(selectFieldMessage);
       }
 
       function updateFieldInDB(complete) {
          if (typeof complete === "undefined") {
-             complete = true;
+            complete = true;
          }
 
-          var fieldData = $("#field-overlay").data('fieldData');
-          var jqValueField = fieldData.jq_value_elt;
+         var fieldData = $("#field-overlay").data('fieldData');
+         var jqValueField = fieldData.jq_value_elt;
 
-          var jqMandatorysignField;
-          var jqErrorsignField;
-          var mandatorysignText;
-          var mandatorysignPath;
-          var errorsignPath;
+         var jqMandatorysignField;
+         var jqErrorsignField;
+         var mandatorysignText = '';
+         var mandatorysignPath;
+         var errorsignPath;
 
          if (complete) {
-             jqMandatorysignField = fieldData.jq_mandatorysign_elt;
-             jqErrorsignField = fieldData.jq_errorsign_elt;
+            jqMandatorysignField = fieldData.jq_mandatorysign_elt;
+            jqErrorsignField = fieldData.jq_errorsign_elt;
             if (jqMandatorysignField.find('label').length > 0) {
-                mandatorysignText = jqMandatorysignField.find('label').text();
+               mandatorysignText = jqMandatorysignField.find('label').innerText ? jqMandatorysignField.find('label').innerText : jqMandatorysignField.find('label')[0].innerText;
             } else {
-                mandatorysignText = jqMandatorysignField[0].firstChild.textContent;
+               mandatorysignText = jqMandatorysignField[0].innerText;
             }
-             mandatorysignText = mandatorysignText.replace(/\s+:\s*/g, '');
-             mandatorysignPath = jqMandatorysignField.getPath(true);
-             errorsignPath = jqErrorsignField.getPath(true);
+            mandatorysignText = mandatorysignText.replace(/\s+:\s*/g, '');
+            mandatorysignPath = jqMandatorysignField.getPath(true);
+            errorsignPath = jqErrorsignField.getPath(true);
          }
 
-          var valuePath = jqValueField.getPath();
-          var selector_value = fieldData.selector_value;
+         var valuePath = jqValueField.getPath();
+         var thisForm = $(valuePath.form)[0];
+         thisForm = $(thisForm);
+         var selector_value = fieldData.selector_value;
 
-          // must get formindex and fieldindex
-          // to check if field is already under validation or not
-          var fieldIndex = jqValueField.attr('glpi-pluginformvalidation-fieldindex');
-          var formIndex = jqValueField.attr('glpi-pluginformvalidation-formindex');
+         if (thisForm.attr('action') == '/front/itilfollowup.form.php' && mandatorysignText == '') {
+            mandatorysignText = 'Followup Description';
+         }
 
-          var fieldUnderValidation = jqValueField.attr('glpi-pluginformvalidation');
+         // must get formindex and fieldindex
+         // to check if field is already under validation or not
+         var fieldIndex = jqValueField.attr('glpi-pluginformvalidation-fieldindex');
+         var formIndex = thisForm.attr('glpi-pluginformvalidation-formindex');
+
+         var fieldUnderValidation = jqValueField.attr('glpi-pluginformvalidation');
 
          if (fieldUnderValidation) {
-             // field is under validation
-             // is show_mandatory
-            if (Formvalidation.ARV.forms[formIndex].fields[fieldIndex].show_mandatory == 1) {
-                // then hide mandatory marking
-                $.ajax({
-                     url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/setUnsetField.php',
-                     method: 'POST',
-                     data: { action: 'hidemandatorysign', fieldindex: fieldIndex },
-                     success: function (response, options) {
-                        //debugger;
-                        var infoField = $.parseJSON(response);
-                        if (infoField) {
-                             var jqMandatorysignField = Formvalidation.getObjFromSelectors($(Formvalidation.ARV.forms[formIndex].css_selector), Formvalidation.ARV.forms[formIndex].fields[fieldIndex], 'css_selector_mandatorysign');
-                             //$(ARV.forms[formIndex].css_selector + '>' + ARV.forms[formIndex].fields[fieldIndex].css_selector_value)
-                             //.parents(ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel.up)
-                             //.find(ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel.down);
-                             // ??? var jqErrorsignField = $(ARV.forms[formIndex].css_selector + '>' + ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign ) ;
-                             Formvalidation.ARV.forms[formIndex].fields[fieldIndex].show_mandatory = 0;
-                             Formvalidation.showHideMandatorySign(jqMandatorysignField, 0);
-                             Formvalidation.alertCallback("Mandatory sign hidden<br>'" + Formvalidation.ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Mandatory sign hidden", restoreSelectMode);
-                        } else {
-                            Formvalidation.alertCallback("Mandatory sign NOT hidden<br>'" + Formvalidation.ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Mandatory sign NOT hidden", restoreSelectMode);
-                        }
-                     },
-                     failure: function (response, options) { /*debugger;*/ }
-                     });
+            // field is under validation
+            // is show_mandatory
+            if (Formvalidation.ARV.forms[formIndex].fields[fieldIndex].show_mandatory == 1 && Formvalidation.ARV.forms[formIndex].fields[fieldIndex].is_active == 1) {
+               // then hide mandatory marking
+               $.ajax({
+                  url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/setUnsetField.php',
+                  method: 'POST',
+                  data: { action: 'hidemandatorysign', fieldindex: fieldIndex },
+                  success: function (response, options) {
+                     //debugger;
+                     var infoField = $.parseJSON(response);
+                     if (infoField) {
+                        var jqMandatorysignField = Formvalidation.getObjFromSelectors($(Formvalidation.ARV.forms[formIndex].css_selector), Formvalidation.ARV.forms[formIndex].fields[fieldIndex], 'css_selector_mandatorysign');
+                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].show_mandatory = 0;
+                        Formvalidation.showHideMandatorySign(jqMandatorysignField, 0);
+                        Formvalidation.alertCallback("'" + Formvalidation.ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Mandatory sign hidden", restoreSelectMode);
+                     } else {
+                        Formvalidation.alertCallback("'" + Formvalidation.ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Mandatory sign NOT hidden", restoreSelectMode);
+                     }
+                  },
+                  failure: function (response, options) { /*debugger;*/ }
+               });
             } else {
-                // then must call ajax to de-activate it from validation
-                $.ajax({
-                     url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/setUnsetField.php',
-                     method: 'POST',
-                     data: { action: 'unset', fieldindex: fieldIndex },
-                     success: function (response, options) {
-                        //debugger;
-                        var infoField = $.parseJSON(response);
-                        if (infoField) {
-                             Formvalidation.ARV.forms[formIndex].fields[fieldIndex].is_active = 0;
-                             Formvalidation.uninstallFieldValidations(Formvalidation.ARV.forms[formIndex].css_selector, Formvalidation.ARV.forms[formIndex].fields[fieldIndex]);
-                             Formvalidation.alertCallback("Field de-activated<br>'" + Formvalidation.ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Field de-activated", restoreSelectMode);
-                        } else {
-                            Formvalidation.alertCallback("Field NOT de-activated!<br>'" + Formvalidation.ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Field NOT de-activated!", restoreSelectMode);
-                        }
-                     },
-                     failure: function (response, options) { /*debugger;*/ }
-                     });
+               // then must call ajax to de-activate it from validation
+               $.ajax({
+                  url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/setUnsetField.php',
+                  method: 'POST',
+                  data: { action: 'unset', fieldindex: fieldIndex },
+                  success: function (response, options) {
+                     //debugger;
+                     var infoField = $.parseJSON(response);
+                     if (infoField) {
+                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].is_active = 0;
+                        Formvalidation.uninstallFieldValidations(Formvalidation.ARV.forms[formIndex].css_selector, Formvalidation.ARV.forms[formIndex].fields[fieldIndex]);
+                        Formvalidation.alertCallback("'" + Formvalidation.ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Field de-activated", restoreSelectMode);
+                     } else {
+                        Formvalidation.alertCallback("'" + Formvalidation.ARV.forms[formIndex].fields[fieldIndex].name + "'<br>field id: " + fieldIndex, "Field NOT de-activated!", restoreSelectMode);
+                     }
+                  },
+                  failure: function (response, options) { /*debugger;*/ }
+               });
             }
          } else {
-             // may be to add field to DB
-             // and may be also form
+            // may be to add field to DB
+            // and may be also form
 
             if (!formIndex) {
-                formIndex = jqValueField.parents('form').first().attr('glpi-pluginformvalidation-formindex');
+               formIndex = jqValueField.parents('form').first().attr('glpi-pluginformvalidation-formindex');
                if (!formIndex) {
                   formIndex = 0; // means the form is not under validation, will be added too
                }
             }
             if (!fieldIndex) {
-                fieldIndex = 0;
+               fieldIndex = 0;
             }
-             $.ajax({
-                  url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/setUnsetField.php',
-                  method: 'POST',
-                  data: {
-                     action: 'set',
-                     pages_id: Formvalidation.ARV.pages_id,
-                     formindex: formIndex,
-                     is_createitem: (items_id == 0 ? 1 : 0),
-                     fieldindex: fieldIndex,
-                     form_css_selector: valuePath.form,
-                     css_selector_value: valuePath.path + ' ' + selector_value,
-                     css_selector_errorsign: errorsignPath.path,
-                     css_selector_mandatorysign: mandatorysignPath.path,
-                     name: mandatorysignText
-                  },
-                  success: function (response, options) {
-                      //debugger;
-                      var infoField = $.parseJSON(response);
-                     if (infoField) {
-                        if (infoField.forms_id) {
-                            formIndex = infoField.forms_id;
-                            fieldIndex = infoField.fields_id;
-                            Formvalidation.ARV.forms = $.extend(true, {}, Formvalidation.ARV.forms, infoField.forms);
-                        } else {
-                            Formvalidation.ARV.forms[formIndex].fields[fieldIndex].is_active = 1;
-                            Formvalidation.ARV.forms[formIndex].fields[fieldIndex].show_mandatory = 1;
-                            Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign = mandatorysignPath.path;
-                            Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign = errorsignPath.path;
-                        }
-                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel = Formvalidation.getUpDownDOMPath(mandatorysignPath.path, Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_value);
-                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign_rel = Formvalidation.getUpDownDOMPath(errorsignPath.path, Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_value);
-
-                        Formvalidation.installFormValidations(Formvalidation.ARV.forms[formIndex]); // to be sure current form is checked with newly created field
-                        if (infoField.forms_id) {
-                            Formvalidation.alertCallback("Field activated<br>'" + mandatorysignText + "'<br>field_id: " + fieldIndex, "Field activated", restoreSelectMode);
-                        } else {
-                            Formvalidation.alertCallback("Field re-activated<br>'" + mandatorysignText + "'<br>field_id: " + fieldIndex, "Field re-activated", restoreSelectMode);
-                        }
+            $.ajax({
+               url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/setUnsetField.php',
+               method: 'POST',
+               data: {
+                  action: 'set',
+                  plugin_formvalidation_pages_id: Formvalidation.ARV.plugin_formvalidation_pages_id,
+                  formindex: formIndex,
+                  is_createitem: (items_id == 0 ? 1 : 0),
+                  fieldindex: fieldIndex,
+                  form_css_selector: valuePath.form,
+                  css_selector_value: valuePath.path + ' ' + selector_value,
+                  css_selector_errorsign: errorsignPath.path,
+                  css_selector_mandatorysign: mandatorysignPath.path,
+                  name: mandatorysignText
+               },
+               success: function (response, options) {
+                  //debugger;
+                  var infoField = $.parseJSON(response);
+                  if (infoField) {
+                     if (infoField.forms_id) {
+                        formIndex = infoField.forms_id;
+                        fieldIndex = infoField.fields_id;
+                        Formvalidation.ARV.forms = $.extend(true, {}, Formvalidation.ARV.forms, infoField.forms);
                      } else {
-                         Formvalidation.alertCallback("Field NOT activated!<br>'" + mandatorysignText + "'", "Field NOT activated!", restoreSelectMode);
+                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].is_active = 1;
+                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].show_mandatory = 1;
+                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign = mandatorysignPath.path;
+                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign = errorsignPath.path;
                      }
-                  },
-                  failure: function (response, options) {
-                     Formvalidation.alertCallback("Field NOT activated!<br>'" + mandatorysignText + "'", "Field NOT activated!", restoreSelectMode);
+
+                     var thisForm = Formvalidation.ARV.forms[formIndex].css_selector;
+                     var fieldData = Formvalidation.ARV.forms[formIndex].fields[fieldIndex];
+                     var jqThisForm = $(thisForm);
+                     if (!jqThisForm.attr('glpi-pluginformvalidation')) {
+                        jqThisForm.attr('glpi-pluginformvalidation-formindex', formIndex);
+                        jqThisForm.attr('glpi-pluginformvalidation', true);
+                     }
+                     Formvalidation.installFieldValidations($(thisForm), fieldData); // to be sure current form is checked with newly created field
+                     field = $(thisForm).find('>' + fieldData.css_selector_value);
+                     field.attr('glpi-pluginformvalidation', true);
+                     field.attr("aria-required", "true");
+                     if (infoField.forms_id) {
+                        Formvalidation.alertCallback("'" + mandatorysignText + "'<br>field_id: " + fieldIndex, "Field activated", restoreSelectMode);
+                     } else {
+                        Formvalidation.alertCallback("'" + mandatorysignText + "'<br>field_id: " + fieldIndex, "Field re-activated", restoreSelectMode);
+                     }
+                  } else {
+                     Formvalidation.alertCallback("'" + mandatorysignText + "'", "Field NOT activated!", restoreSelectMode);
                   }
-                });
+               },
+               failure: function (response, options) {
+                  Formvalidation.alertCallback("'" + mandatorysignText + "'", "Field NOT activated!", restoreSelectMode);
+               }
+            });
 
          }
       };
 
-       $("[id^='errorsign-overlay-']").on('mouseup', function () {
+      $("[id^='errorsign-overlay-']").on('mouseup', function () {
          if (selectMode == SELECT_ERRORSIGN) {
             // we store in the data field the jquery object
             setMandatorySignSelectMode();
          }
-       });
-       $("[id^='mandatorysign-overlay-']").on('mouseup', function () {
-           Formvalidation.hideSignOverlay("mandatorysign-overlay");
-           disableSelectMode();
-           Formvalidation.hideSignOverlay("errorsign-overlay");
-           $("#field-overlay").hide();
-           updateFieldInDB();
-       });
+      });
+      $("[id^='mandatorysign-overlay-']").on('mouseup', function () {
+         Formvalidation.hideSignOverlay("mandatorysign-overlay");
+         disableSelectMode();
+         Formvalidation.hideSignOverlay("errorsign-overlay");
+         $("#field-overlay").hide();
+         updateFieldInDB();
+      });
 
       function myMouseEnter(eventObject) {
          if (selectMode == SELECT_ERRORSIGN || selectMode == SELECT_MANDATORYSIGN) {
             var field = $(document.elementFromPoint(eventObject.clientX, eventObject.clientY)); //$(this).first();
-            //console.log(eventObject.pageX + ', ' + eventObject.pageY + ' / ' + eventObject.clientX + ', ' + eventObject.clientY);
             if (field.length > 0) {
                switch (selectMode) {
                   case SELECT_ERRORSIGN:
-                       //debugger;
                      if ($.contains($("#field-overlay").data("fieldData")['jq_focus_elt'][0], this)) {
                         field = $("#field-overlay").data("fieldData")['jq_focus_elt'];
                      }
-                       Formvalidation.showSignOverlay("errorsign-overlay", field.offset().top, field.offset().left, field.outerWidth(), field.outerHeight());
-                       $("#field-overlay").data("fieldData")['jq_errorsign_elt'] = field;
+                     Formvalidation.showSignOverlay("errorsign-overlay", field.offset().top, field.offset().left, field.outerWidth(), field.outerHeight());
+                     $("#field-overlay").data("fieldData")['jq_errorsign_elt'] = field;
                      break;
                   case SELECT_MANDATORYSIGN:
-                        Formvalidation.showSignOverlay("mandatorysign-overlay", field.offset().top, field.offset().left, field.outerWidth(), field.outerHeight());
-                        $("#field-overlay").data("fieldData")['jq_mandatorysign_elt'] = field;
+                     Formvalidation.showSignOverlay("mandatorysign-overlay", field.offset().top, field.offset().left, field.outerWidth(), field.outerHeight());
+                     $("#field-overlay").data("fieldData")['jq_mandatorysign_elt'] = field;
                      break;
                }
-                eventObject.stopImmediatePropagation();
-                eventObject.preventDefault();
+               eventObject.stopImmediatePropagation();
+               eventObject.preventDefault();
             }
          }
       }
 
-       $('body').on('mousemove', 'form span, form div, form td, form th, form img', myMouseEnter); // form input, form textarea,
+      $('body').on('mousemove', 'form span, form div, form td, form th, form img div[class="form-field"]', myMouseEnter); // form input, form textarea,
+
+      
+
+         
 
        //------------------------------------------
-       $('body').on('mouseover', 'form div.select2-container, form span.select2-container, form input[type=radio], form input:text:visible:not(.select2-focusser), form textarea:visible, form td.mceIframeContainer iframe, form div.mce-edit-area.mce-container.mce-panel.mce-stack-layout-item.mce-last iframe,form span.form-group-checkbox, form input[type=checkbox], form div.rateit', function () {
+      $('body').on('mouseover', 'iframe.tox-edit-area__iframe ,form div.select2-container, form span.select2-container, form input[type=radio], form input[type=password], form input:text:visible:not(.select2-focusser), form textarea:visible, form td.mceIframeContainer iframe, form div.mce-edit-area.mce-container.mce-panel.mce-stack-layout-item.mce-last iframe,form span.form-group-checkbox, form input[type=checkbox], form div.rateit', function () {
          if (selectMode == SELECT_FIELD) {
             var field = false;
 
             switch (this.localName) {
                case 'input':
+                  jqValueElt = $(this);
+                  if (jqValueElt.parent().hasClass('flatpickr')) {
+                     eltParent = jqValueElt.parent();
+                     jqValueElt = eltParent.find('.flatpickr-input');
+                  }
+                  var endSelectorValue = jqValueElt[0].name === "" ? jqValueElt[0].type : jqValueElt[0].name;
+                  var attr = jqValueElt[0].name ? "name" : "type";
+                  field = {
+                     'jq_value_elt': jqValueElt,
+                     'jq_focus_elt': $(this),
+                     'selector_value': jqValueElt[0].localName + '[' + attr + '="' + endSelectorValue + '"]'
+                  };
+                  break;
                case 'textarea':
                    jqValueElt = $(this);
                    var endSelectorValue = jqValueElt[0].name === "" ? jqValueElt[0].type : jqValueElt[0].name;
-                   var attr = jqValueElt[0].name ? "name" : "type";
+                   var attr = jqValueElt[0].name ? "content" : "type";
                   field = {
                      'jq_value_elt': jqValueElt,
                      'jq_focus_elt': jqValueElt,
@@ -1028,10 +1035,17 @@ var Formvalidation = {
                   };
                         break;
                case 'iframe':
+                  jqValueElt = $(this);
+                  if (jqValueElt.closest('.tox-tinymce')) {
+                     eltParent = jqValueElt.closest('.tox-tinymce');
+                     jqValueElt = eltParent.siblings('textarea');
+                  }
+                  var endSelectorValue = jqValueElt[0].name === "" ? jqValueElt[0].type : jqValueElt[0].name;
+                  var attr = jqValueElt[0].name ? "name" : "type";
                   field = {
-                     'jq_value_elt': $(this),
+                     'jq_value_elt': jqValueElt,
                      'jq_focus_elt': $(this),
-                     'selector_value': 'iframe[id^="' + /^[a-z]+/i.exec(this.id) + '"]'
+                     'selector_value': 'textarea[' + attr + '="' + endSelectorValue + '"]'
                   };
                         break;
             }
@@ -1051,16 +1065,12 @@ var Formvalidation = {
          }
        });
    }
-
+  
 }
 
 
 if (location.href.indexOf('withtemplate=1') == -1) {
-    //debugger;
 
-    // "/plugins/formvalidation/front/page.form.php"
-    // "/plugins/rayusermanagementticket/front/rayusermanagementticket.helpdesk.public.php"
-    // "/plugins/formcreator/front/formdisplay.php"
     var itemtype = location.pathname.match(/(plugin)s\/([a-z]+)(?:\/[a-z]+)+\/([a-z]+)\.form\.php$/);
    if (!itemtype) {
        itemtype = location.pathname.match(/(plugin)s\/([a-z]+)(?:\/[a-z]+)+\/([a-z]+)\.helpdesk.public\.php$/);
@@ -1114,86 +1124,82 @@ if (location.href.indexOf('withtemplate=1') == -1) {
        //------------------------------------------
        // ajax call to load the validation data
        itemtype.shift();
-       Formvalidation.capitalizeArray(itemtype);
-       $.ajax({
+      Formvalidation.capitalizeArray(itemtype);
+      $.ajax({
+         
             url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/getFormValidations.php',
             data: { itemtype: itemtype.join(''), id: items_id },
-            success: function (response, options) {
+         success: function (response, options) {
+            
                 //debugger;
-                Formvalidation.ARV = $.parseJSON(response);
-
-                $.each(Formvalidation.ARV.forms, function (formIndex, formData) {
-                    $.each(formData.fields, function (fieldIndex, fieldData) {
-                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_mandatorysign_rel = Formvalidation.getUpDownDOMPath(fieldData.css_selector_mandatorysign, fieldData.css_selector_value);
-                        Formvalidation.ARV.forms[formIndex].fields[fieldIndex].css_selector_errorsign_rel = Formvalidation.getUpDownDOMPath(fieldData.css_selector_errorsign, fieldData.css_selector_value);
-                    });
-                });
-
-                $(document).ajaxComplete(Formvalidation.installRunMode);
-                //debugger;
-               if (Formvalidation.ARV.config.editmode == 1 && Formvalidation.ARV.pages_id > 0) {
-                   $(document).ajaxComplete(Formvalidation.installEditMode);
-                   //$(installEditMode);
-               }
-
-                // TODO external fields
-                //else if (items_id > 0) {
-                //    //setTimeout(function () {
-                //    $(function(){
-                //        var count = $('ul[role="tablist"] li').length;
-                //        //"/ajax/common.tabs.php?_target=" + location.pathname + "&_itemtype=" + itemtype.join('') + "&_glpi_tab=-1&id=" + items_id + "&"
-                //        if (count) {
-                //            $('ul[role="tablist"]').parent('div').tabs("load", count - 1);
-                //        }
-                //    });
-                //    //}, 1000);
-                //}
-
-            },
+            Formvalidation.ARV = $.parseJSON(response);
+                  Formvalidation.installRunMode();
+                  if (Formvalidation.ARV.config.editmode == 1 && Formvalidation.ARV.plugin_formvalidation_pages_id > 0) {
+                     Formvalidation.installEditMode();
+                  }
+                        },
             failure: function (response, options) { /*debugger;*/ }
          });
    }
 
+   
     //------------------------------------------
     // this function retreive the path of the
     // object in parameter and return an object
     // with .form as the selector_value for the form
     // and .path as the focus path
     //------------------------------------------
-    jQuery.fn.getPath = function (complete) {
+   jQuery.fn.getPath = function (complete) {
       if (this.length < 1) {
-          throw 'getPath() requires at least one element.';
+         throw 'getPath() requires at least one element.';
       }
       if (typeof complete === "undefined") {
           complete = false;
       }
-        var path, node = (complete ? this : this.parent()); //s('td').first();
-      while (node.length) {
+       var path, node = (complete ? this : this.parent()); //s('td').first();
+       while (node.length) {
           var realNode = node[0], name = realNode.localName;
          if (!name) {
               break;
          }
 
-          name = name.toLowerCase();
+          name = name.toLowerCase()
 
          if (name == 'form') {
-               //var fieldData = '';
             if ($(realNode).attr('name')) {
                 name += '[name="' + $(realNode).attr('name') + '"]';
             }
+            var id = '';
+            if ($(realNode).attr('id')) {
+               id = '[id="' + $(realNode).attr('id') + '"]';
+            }
+            
+            var action = $(realNode).attr('action');
+            var indexOfQuestionMark = action.indexOf('?');
+            action = indexOfQuestionMark >= 0 ? '[action^="' + action.substr(0, indexOfQuestionMark) + '"]' : '[action="' + action + '"]';
 
-               return { form: name + '[action="' + $(realNode).attr('action') + '"]', path: path };
-         }
+            return {form: name + id + action, path: path};
+          }
              var parent = node.parent();
 
              var siblings = parent.children(name);
-         if (siblings.length > 1) {
-            name += ':eq(' + siblings.index(realNode) + ')';
+          if (siblings.length > 1) {
+             if (siblings.hasClass('fileupload')) {
+                name += ":eq(" + siblings.index(realNode) + "):not('.fileupload')";
+             } else {
+                name += ':eq(' + siblings.index(realNode) + ')';
+             }
          }
-             path = name + (path ? '>' + path : '');
-             node = parent;
-      }
+          path = name + (path ? '>' + path : '');
 
+          node = parent;
+       }
         return { form: '', path: path };
     };
 };
+
+// TODO LUNDI
+//var role = '';
+//if ($(realNode).attr('role')) {
+//   role = '[role="' + $(realNode).attr('role') + '"]';
+//}

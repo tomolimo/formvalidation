@@ -60,17 +60,19 @@ if (isset($_REQUEST['action'])) {
                $name = '';
                $action = '';
                $matches = [];
-               $regex = "/form(\\[name=\\\"(?'name'\\w*)\\\"])?\\[action=\\\"(?'action'[\\w\\/\\.]*)\\\"]/";
+               $regex = '/form(?>(?>\[name="(?\'name\'\w*)?"])|(?>\[id="(?\'id\'[\w-]*)?"]))+\[action\^{0,1}="(?\'action\'[\w\/\.]*)"]/ui';
                if (preg_match( $regex, str_replace("\\", "", html_entity_decode($_REQUEST['form_css_selector'])), $matches )) {
-                  if (isset($matches['name'] )) {
+                  if (isset($matches['name']) && $matches['name'] != '') {
                      $name = $matches['name'];
+                  } else if (isset($matches['id'])) {
+                     $name = $matches['id'];
                   }
                   $action =  $matches['action'];
                }
                if ($form->add(
                   [
                      'name'            => $DB->escape("$name($action)"),
-                     'pages_id'        => $_REQUEST['pages_id'],
+                     'plugin_formvalidation_pages_id'        => $_REQUEST['plugin_formvalidation_pages_id'],
                      'css_selector'    => $DB->escape(html_entity_decode($_REQUEST['form_css_selector'])),
                      'is_active'       => 1,
                      'is_createitem'   => $_REQUEST['is_createitem']
@@ -84,7 +86,7 @@ if (isset($_REQUEST['action'])) {
             if ($fields->add(
                [
                   'name'                        => $_REQUEST['name'],
-                  'forms_id'                    => $_REQUEST['formindex'],
+                  'plugin_formvalidation_forms_id'                    => $_REQUEST['formindex'],
                   'css_selector_value'          => $DB->escape(html_entity_decode( $_REQUEST['css_selector_value'])),
                   'css_selector_errorsign'      => $DB->escape(html_entity_decode( $_REQUEST['css_selector_errorsign'])),
                   'css_selector_mandatorysign'  => $DB->escape(html_entity_decode( $_REQUEST['css_selector_mandatorysign'])),
