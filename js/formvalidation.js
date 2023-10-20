@@ -1,7 +1,7 @@
 ﻿/*
  * -------------------------------------------------------------------------
 Form Validation plugin
-Copyright (C) 2016 by Raynet SAS a company of A.Raymond Network.
+Copyright (C) 2016-2023 by Raynet SAS a company of A.Raymond Network.
 
 http://www.araymond.com
 -------------------------------------------------------------------------
@@ -275,8 +275,13 @@ var Formvalidation = {
                } else {
                       initText = obj[0].firstChild.textContent;
                }
-                 obj.data('initialText', initText.replace(/\s+:\s*/g, ''));
-                 obj.data('initialHTML', obj[0].innerHTML);
+               obj.data('initialText', initText.replace(/\s+:\s*/g, ''));
+               obj.data('initialHTML', obj[0].innerHTML);
+               $.each($.parseJSON(Formvalidation.ARV.config.css_mandatory), function (cssIndex, cssObj) {
+                  // store initial css
+                  obj.data('initialCSS_' + cssIndex, obj.css(cssIndex));
+               });
+
             }
               obj[0].innerHTML = obj.data('initialText');
             if (showSign) {
@@ -286,8 +291,8 @@ var Formvalidation = {
                 obj[0].innerHTML = obj.data('initialHTML');
                 $.each($.parseJSON(Formvalidation.ARV.config.css_mandatory), function (cssIndex, cssObj) {
                   if (obj) {
-                        // hide the mandatory sign
-                        obj.css(cssIndex, '');
+                     // hide the mandatory sign
+                     obj.css(cssIndex, obj.data('initialCSS_' + cssIndex));
                   }
                 });
             }
@@ -342,7 +347,7 @@ var Formvalidation = {
           // hides the mandatory sign
           $.each(fields, function (index, field) {
               //showHideMandatorySign($(formCss).find('>' + fieldData.css_selector_mandatorysign), false);
-              showHideMandatorySign(Formvalidation.getObjFromSelectors($(formCss), fieldData, 'css_selector_mandatorysign'), false); // .find('>' + fieldData.css_selector_value)
+              Formvalidation.showHideMandatorySign(Formvalidation.getObjFromSelectors($(formCss), fieldData, 'css_selector_mandatorysign'), false); // .find('>' + fieldData.css_selector_value)
               //.parents(fieldData.css_selector_mandatorysign_rel.up)
               //.find(fieldData.css_selector_mandatorysign_rel.down), false);
               //showHideErrorSign($(formCss).find('>' + fieldData.css_selector_errorsign), false);
@@ -536,8 +541,8 @@ var Formvalidation = {
                 //.parents(fieldData.css_selector_mandatorysign_rel.up)
                 //.find(fieldData.css_selector_mandatorysign_rel.down).data('initialText');  // by default
                try {
-                  if (ARL.plugin_formvalidation.forms[Formvalidation.ARV.pages_id][obj.forms_id][obj.id]) {
-                     locErrorMessage = '* ' + ARL.plugin_formvalidation.forms[Formvalidation.ARV.pages_id][obj.forms_id][obj.id];
+                  if (Formvalidation.ARL.plugin_formvalidation.forms[Formvalidation.ARV.pages_id][obj.forms_id][obj.id]) {
+                     locErrorMessage = '* ' + Formvalidation.ARL.plugin_formvalidation.forms[Formvalidation.ARV.pages_id][obj.forms_id][obj.id];
                   }
                } catch (e) {
                }
@@ -579,16 +584,14 @@ var Formvalidation = {
             }
          } catch (e) {
              // if any error in formula evaluations
-             errorMessage += '<span class=\"red\">' + ARL.plugin_formvalidation['formulaerror'] + index + '<br>Error message: ' + e.message + '<br>Unknown variables: ' + unusedVariables + '</span><br>';
+             errorMessage += '<span class=\"red\">' + Formvalidation.ARL.plugin_formvalidation['formulaerror'] + index + '<br>Error message: ' + e.message + '<br>Unknown variables: ' + unusedVariables + '</span><br>';
          }
        });
 
        //------------------------------------------
       if (errorMessage != '' || !eval(formFormula)) {
           // cancel current event to prevent submit of form
-          eventObject.stopImmediatePropagation();
-          eventObject.preventDefault();
-          Formvalidation.alertCallback('<b>' + ARL.plugin_formvalidation['mandatorytitle'] + '</b><br>' + errorMessage, ARL.plugin_formvalidation['alert']);
+          Formvalidation.alertCallback('<b>' + Formvalidation.ARL.plugin_formvalidation['mandatorytitle'] + '</b><br>' + errorMessage, Formvalidation.ARL.plugin_formvalidation['alert']);
           return false;
       } else {
           // the form is going to be posted
@@ -834,7 +837,7 @@ var Formvalidation = {
          if (fieldUnderValidation) {
              // field is under validation
              // is show_mandatory
-            if (ARV.forms[formIndex].fields[fieldIndex].show_mandatory == 1) {
+            if (Formvalidation.ARV.forms[formIndex].fields[fieldIndex].show_mandatory == 1) {
                 // then hide mandatory marking
                 $.ajax({
                      url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/setUnsetField.php',
@@ -1103,10 +1106,10 @@ if (location.href.indexOf('withtemplate=1') == -1) {
        //------------------------------------------
        // ajax call to load localized string
        $.ajax({
-            url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/getLocales.php',
-            success: function (response, options) { /*debugger;*/ ARL = $.parseJSON(response); },
-            failure: function (response, options) { /*debugger;*/ }
-         });
+          url: Formvalidation.ARRoot + '/plugins/formvalidation/ajax/getLocales.php',
+          success: function (response, options) { /*debugger;*/ Formvalidation.ARL = $.parseJSON(response); },
+          failure: function (response, options) { /*debugger;*/ }
+       });
 
        //------------------------------------------
        // ajax call to load the validation data

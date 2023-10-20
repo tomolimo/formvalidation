@@ -2,7 +2,7 @@
 /*
  * -------------------------------------------------------------------------
 Form Validation plugin
-Copyright (C) 2016 by Raynet SAS a company of A.Raymond Network.
+Copyright (C) 2016-2023 by Raynet SAS a company of A.Raymond Network.
 
 http://www.araymond.com
 -------------------------------------------------------------------------
@@ -24,7 +24,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
- */
+*/
 
 $AJAX_INCLUDE = 1;
 include ('../../../inc/includes.php');

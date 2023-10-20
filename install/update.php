@@ -1,4 +1,30 @@
 <?php
+/*
+ * -------------------------------------------------------------------------
+Form Validation plugin
+Copyright (C) 2016-2023 by Raynet SAS a company of A.Raymond Network.
+
+http://www.araymond.com
+-------------------------------------------------------------------------
+
+LICENSE
+
+This file is part of Form Validation plugin for GLPI.
+
+This file is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+GLPI is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GLPI. If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------------------------------------
+*/
 
 function formvalidation_update() {
    global $DB, $CFG_GLPI;
@@ -257,5 +283,58 @@ function formvalidation_update() {
             }
          }
       }
+   }
+
+   /****************************************************
+    * update data for 1.0.0 to 1.0.1
+    * *************************************************/
+   if ($config->fields['db_version'] == '1.0.0') {
+      //* it is neccessary to upgrade the data for the itemtype dropdown
+      // get itemtype
+      $itemtypes = $dbu->getAllDataFromTable('glpi_plugin_formvalidation_itemtypes', [
+         'name' => 'PluginFormvalidationItemtype',
+         'URL_path_part' => '/plugins/formvalidation/front/itemtype.form.php'
+         ]);
+      if (count($itemtypes)) {
+         // there should be only one row
+         // get page
+         $pages = $dbu->getAllDataFromTable('glpi_plugin_formvalidation_pages', [
+            'itemtypes_id' => array_column($itemtypes, 'id')
+            ]);
+         if (count($pages)) {
+            // get forms
+            $forms = $dbu->getAllDataFromTable('glpi_plugin_formvalidation_forms', [
+               'pages_id' => array_column($pages, 'id')
+               ]);
+            foreach ($forms as $form) {
+               $fieldName = array_values($dbu->getAllDataFromTable('glpi_plugin_formvalidation_fields', [
+                  'forms_id' => $form['id'],
+                  'name'     => 'Name'
+                  ]));
+               $fieldName = $fieldName[0];
+
+               $fieldItemtype = array_values($dbu->getAllDataFromTable('glpi_plugin_formvalidation_fields', [
+                  'id' => $fieldName['id'] + 1
+                  ]));
+               $fieldItemtype = $fieldItemtype[0];
+
+               $fieldURL = array_values($dbu->getAllDataFromTable('glpi_plugin_formvalidation_fields', [
+                  'id' => $fieldName['id'] + 2
+                  ]));
+               $fieldURL = $fieldURL[0];
+
+               $DB->update('glpi_plugin_formvalidation_fields', ['name' => $fieldItemtype['name']], ['id' => $fieldName['id']]);
+               $DB->delete('glpi_plugin_formvalidation_fields', ['id' => $fieldURL['id']]);
+               $DB->update('glpi_plugin_formvalidation_fields', [
+                  'name'    => $fieldURL['name'],
+                  'formula' => $fieldURL['formula'],
+                  'css_selector_value' => 'div>table>tbody>tr:eq(2)>td:eq(1) input[name="URL_path_part"]'
+                  ], [
+                  'id' => $fieldItemtype['id']
+                  ]);
+            }
+         }
+      }
+      $config->update(['id' => 1, 'db_version' => '1.0.1']);
    }
 }

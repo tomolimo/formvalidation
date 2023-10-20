@@ -1,4 +1,30 @@
 <?php
+/*
+ * -------------------------------------------------------------------------
+Form Validation plugin
+Copyright (C) 2016-2023 by Raynet SAS a company of A.Raymond Network.
+
+http://www.araymond.com
+-------------------------------------------------------------------------
+
+LICENSE
+
+This file is part of Form Validation plugin for GLPI.
+
+This file is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+GLPI is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GLPI. If not, see <http://www.gnu.org/licenses/>.
+--------------------------------------------------------------------------
+*/
 
 function formvalidation_install() {
    global $DB, $CFG_GLPI;
@@ -9,7 +35,7 @@ function formvalidation_install() {
          'glpi_plugin_formvalidation_configs', [
             'id'            => '1',
             'css_mandatory' => '{\"background-color\":\"lightgrey\", \"font-weight\":\"bold\"}',
-            'css_error'     => '{\"background-color\": \"red\"}'
+            'css_error'     => '{\"outline\":\"solid 1mm red\"}'
          ],
          "Error inserting default config into glpi_plugin_formvalidation_configs "
    );
@@ -95,12 +121,10 @@ function formvalidation_install() {
                        (16, 'Title', 7, 'div>table:eq(2)>tbody>tr:eq(0)>td input[name=\\\"name\\\"]', NULL, 'div>table:eq(2)>tbody>tr:eq(0)>td', 'div>table:eq(2)>tbody>tr:eq(0)>th', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."16")."'),
                        (17, 'Description', 7, 'div>table:eq(2)>tbody>tr:eq(1)>td>div textarea[name=\\\"content\\\"]', NULL, 'div>table:eq(2)>tbody>tr:eq(1)>td', 'div>table:eq(2)>tbody>tr:eq(1)>th', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."17")."'),
                        (18, 'Name', 8, 'div>table>tbody>tr:eq(1)>td:eq(1) input[name=\\\"name\\\"]', NULL, 'div>table>tbody>tr:eq(1)>td:eq(1)', 'div>table>tbody>tr:eq(1)>td:eq(0)', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."18")."'),
-                       (19, 'Name', 9, 'div>table>tbody>tr:eq(1)>td:eq(1) input[name=\\\"name\\\"]', NULL, 'div>table>tbody>tr:eq(1)>td:eq(1)', 'div>table>tbody>tr:eq(1)>td:eq(0)', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."19")."'),
-                       (20, 'Item type (example: Project)', 9, 'div>table>tbody>tr:eq(2)>td:eq(1) input[name=\\\"itemtype\\\"]', NULL, 'div>table>tbody>tr:eq(2)>td:eq(1)','div>table>tbody>tr:eq(2)>td:eq(0)', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."20")."'),
-                       (21, 'URL path part (example: /front/project.form.php)', 9, 'div>table>tbody>tr:eq(3)>td:eq(1) input[name=\\\"URL_path_part\\\"]', NULL, 'div>table>tbody>tr:eq(3)>td:eq(1)', 'div>table>tbody>tr:eq(3)>td:eq(0)', 1, 1, NULL, '(#.length > 0) && (function(){var res;$.ajax({async: false, url: \"/plugins/formvalidation/ajax/existingFile.php\",type: \"GET\",data: { filename: # },success: function (response) {if(response==1){res = 1;}else{res=0;}}});return res;})();', NULL, NULL,'".md5($guid."21")."'),
-                       (22, 'Name', 10, 'div>table>tbody>tr:eq(1)>td:eq(1) input[name=\\\"name\\\"]', NULL, 'div>table>tbody>tr:eq(1)>td:eq(1)', 'div>table>tbody>tr:eq(1)>td:eq(0)', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."22")."'),
-                       (23, 'Item type (example: Project)', 10, 'div>table>tbody>tr:eq(2)>td:eq(1) input[name=\\\"itemtype\\\"]', NULL, 'div>table>tbody>tr:eq(2)>td:eq(1)','div>table>tbody>tr:eq(2)>td:eq(0)', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."23")."'),
-                       (24, 'URL path part (example: /front/project.form.php)', 10, 'div>table>tbody>tr:eq(3)>td:eq(1) input[name=\\\"URL_path_part\\\"]', NULL, 'div>table>tbody>tr:eq(3)>td:eq(1)', 'div>table>tbody>tr:eq(3)>td:eq(0)', 1, 1, NULL, '(#.length > 0) && (function(){var res;$.ajax({async: false, url: \"/plugins/formvalidation/ajax/existingFile.php\",type: \"GET\",data: { filename: # },success: function (response) {if(response==1){res = 1;}else{res=0;}}});return res;})();', NULL, NULL,'".md5($guid."24")."'); ";
+                       (19, 'Item type (example: Project)', 9, 'div>table>tbody>tr:eq(1)>td:eq(1) input[name=\\\"name\\\"]', NULL, 'div>table>tbody>tr:eq(1)>td:eq(1)', 'div>table>tbody>tr:eq(1)>td:eq(0)', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."19")."'),
+                       (20, 'URL path part (example: /front/project.form.php)', 9, 'div>table>tbody>tr:eq(2)>td:eq(1) input[name=\\\"URL_path_part\\\"]', NULL, 'div>table>tbody>tr:eq(2)>td:eq(1)','div>table>tbody>tr:eq(2)>td:eq(0)', 1, 1, NULL, '(#.length > 0) && (function(){var res;$.ajax({async: false, url: \"/plugins/formvalidation/ajax/existingFile.php\",type: \"GET\",data: { filename: # },success: function (response) {if(response==1){res = 1;}else{res=0;}}});return res;})();', NULL, NULL,'".md5($guid."20")."'),
+                       (21, 'Item type (example: Project)', 10, 'div>table>tbody>tr:eq(1)>td:eq(1) input[name=\\\"name\\\"]', NULL, 'div>table>tbody>tr:eq(1)>td:eq(1)', 'div>table>tbody>tr:eq(1)>td:eq(0)', 1, 1, NULL, NULL, NULL, NULL,'".md5($guid."21")."'),
+                       (22, 'URL path part (example: /front/project.form.php)', 10, 'div>table>tbody>tr:eq(2)>td:eq(1) input[name=\\\"URL_path_part\\\"]', NULL, 'div>table>tbody>tr:eq(2)>td:eq(1)','div>table>tbody>tr:eq(2)>td:eq(0)', 1, 1, NULL, '(#.length > 0) && (function(){var res;$.ajax({async: false, url: \"/plugins/formvalidation/ajax/existingFile.php\",type: \"GET\",data: { filename: # },success: function (response) {if(response==1){res = 1;}else{res=0;}}});return res;})();', NULL, NULL,'".md5($guid."22")."'); ";
    $DB->query($query) or die("Error inserting default data into glpi_plugin_formvalidation_fields " . $DB->error());
 
 }
