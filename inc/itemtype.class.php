@@ -26,6 +26,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
 */
 
+use Glpi\Application\View\TemplateRenderer;
+
 /**
  * itemtype short summary.
  *
@@ -51,36 +53,42 @@ class PluginFormvalidationItemtype extends CommonDropdown {
       $this->initForm($id);
       $this->showFormHeader(['formtitle'=>'Item type','colspan' => 4]);
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td><label for='name'>".__('Item type name (examples: Project, Computer, ...)')."</label></td>";
-      echo "<td><input type='text' name='name' value='".$this->fields['name']."'/></td>";
-      echo "<tr class='tab_bg_1'>";
-      echo "<td><label for='name'>".__('URL path part of the item type form (examples: /front/project.form.php, /front/computer.form.php, ...)', 'formvalidation')."</label></td>";
-      echo "<td><input type='text' id='urlpath' name='URL_path_part' value='".$this->fields['URL_path_part']."'/></td>";
-      echo "</tr'>";
+      
+
+      $html = TemplateRenderer::getInstance()->render('@formvalidation/item_type.html.twig', [
+        'data' => $this->fields
+     ]);
+
+      echo $html;
+
 
       $this->showFormButtons();
-      //echo '<script>';
-      //echo '$(".ui-icon.ui-icon-search").on("click", function (e) {
-      //       var filename = $("#urlpath").val();
-      //       $.ajax({url: "http://fry09129.ar.ray.group/plugins/formvalidation/ajax/existingFile.php",async: false, type: "GET",data: { filename: filename },success: function (response, statut, error) {if(response == "1") { return true; }else{ return false; }}});
-      //   });';
-      //echo '</script>';
+
 
    }
-   
-   function post_addItem() {
-      global $DB,$CFG_GLPI;
-      $id = $this->fields['id'];
-      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/itemtype/".time()."/".rand()."/".$id;
-      $DB->updateOrDie(
-         'glpi_plugin_formvalidation_itemtypes',
-         [
-            'guid' => md5($guid)
-         ],
-         [
-            'id'  => $id
-         ]
-      );
+
+   //function post_addItem() {
+   //   global $DB,$CFG_GLPI;
+   //   $id = $this->fields['id'];
+   //   $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/itemtype/".time()."/".rand()."/".$id;
+   //   $DB->updateOrDie(
+   //      'glpi_plugin_formvalidation_itemtypes',
+   //      [
+   //         'guid' => md5($guid)
+   //      ],
+   //      [
+   //         'id'  => $id
+   //      ]
+   //   );
+   //}
+
+   function prepareInputForAdd($input) {
+       global $CFG_GLPI;
+       if (!isset($input['guid'])) {
+           // default value
+           $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/itemtype/".time()."/".rand()."/".rand();
+           $input['guid'] = md5($guid);
+       }
+       return $input;
    }
 }

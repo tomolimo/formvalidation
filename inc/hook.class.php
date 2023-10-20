@@ -26,6 +26,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
 */
 
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+
 /**
  * hook short summary.
  *
@@ -49,6 +51,8 @@ class PluginFormvalidationHook extends CommonDBTM {
          echo "</td></tr>";
       }
    }
+
+
 
    /**
     * Summary of plugin_pre_item_update_formvalidation
@@ -80,7 +84,7 @@ class PluginFormvalidationHook extends CommonDBTM {
                         'SELECT'    => [
                            'glpi_plugin_formvalidation_forms.id',
                            'glpi_plugin_formvalidation_forms.name',
-                           'glpi_plugin_formvalidation_forms.pages_id',
+                           'glpi_plugin_formvalidation_forms.plugin_formvalidation_pages_id',
                            'glpi_plugin_formvalidation_forms.css_selector',
                            'glpi_plugin_formvalidation_forms.is_createitem',
                            'glpi_plugin_formvalidation_forms.is_active',
@@ -96,19 +100,19 @@ class PluginFormvalidationHook extends CommonDBTM {
                            'glpi_plugin_formvalidation_fields' => [
                               'FKEY' => [
                                  'glpi_plugin_formvalidation_forms' => 'id',
-                                 'glpi_plugin_formvalidation_fields' => 'forms_id'
+                                 'glpi_plugin_formvalidation_fields' => 'plugin_formvalidation_forms_id'
                               ]
                            ],
                            'glpi_plugin_formvalidation_pages' => [
                               'FKEY' => [
                                  'glpi_plugin_formvalidation_pages' => 'id',
-                                 'glpi_plugin_formvalidation_forms' => 'pages_id'
+                                 'glpi_plugin_formvalidation_forms' => 'plugin_formvalidation_pages_id'
                               ]
                            ],
                            'glpi_plugin_formvalidation_itemtypes' => [
                               'FKEY' => [
                                  'glpi_plugin_formvalidation_itemtypes' => 'id',
-                                 'glpi_plugin_formvalidation_pages' => 'itemtypes_id'
+                                 'glpi_plugin_formvalidation_pages' => 'plugin_formvalidation_itemtypes_id'
                               ]
                            ]
                         ],
@@ -129,7 +133,7 @@ class PluginFormvalidationHook extends CommonDBTM {
          $query2['WHERE']['AND']["glpi_plugin_formvalidation_fields.css_selector_value"] = ['LIKE', '%'.$key[0].'%'];
 
          foreach ($DB->request( $query2) as $form) {
-            foreach ($DB->request('glpi_plugin_formvalidation_fields', ['AND' => ['forms_id' => $form['id'], 'is_active' => 1]])  as $field) {
+            foreach ($DB->request('glpi_plugin_formvalidation_fields', ['AND' => ['plugin_formvalidation_forms_id' => $form['id'], 'is_active' => 1]])  as $field) {
                $matches = [];
                if (preg_match('/\[(name|id\^)=\\\\{0,1}"(?<name>[a-z_\-0-9]+)\\\\{0,1}"\]/i', $field['css_selector_value'], $matches)) {
                   $fieldnames[$field['id']] = trim($matches['name'], "_");
@@ -157,31 +161,30 @@ class PluginFormvalidationHook extends CommonDBTM {
 
             $ret=[];
             $helpers = file_get_contents(__DIR__ . "/../js/helpers_function.js");
-            $moment  = file_get_contents(__DIR__ . "/../lib/moment/moment.min.js");
             foreach ($formulaJS as $index => $formula) {
                try {
                   if (extension_loaded('v8js')) {
                      $v8 = new V8Js();
-                     if (!$v8->executeString($moment."\n".$helpers."\n
+                     if (!$v8->executeString($helpers."\n
                         exec = $formula;" )
                         ) {
-                        Session::addMessageAfterRedirect( __('Mandatory fields or wrong value: ').__($fieldtitles[$index]), true, ERROR );
+                        Session::addMessageAfterRedirect(sprintf( __('Mandatory fields or wrong value: \'%s\'', 'formvalidation'), __($fieldtitles[$index])), true, ERROR );
                         $ret[] = $fieldnames[$index];
                      }
                   } else {
                      if (file_exists($path)) {
                         $tmpfile = tempnam(GLPI_ROOT.'/files/_tmp', 'tmp');
                         $handle = fopen($tmpfile, "w");
-                        fwrite($handle, "var moment = require('".str_replace('\\', '/', __DIR__)."/../lib/moment/moment.min.js');\n".$helpers."\nif($formula){console.log(1);}else{console.log(0);}");
+                        fwrite($handle, $helpers . "\nif(" . $formula . '){console.log(1);}else{console.log(0);}');
                         fclose($handle);
                         $valid = exec("\"$path\" \"$tmpfile\"");
                         if ($valid == 0 || is_null($valid)) {
-                           Session::addMessageAfterRedirect( __('Mandatory fields or wrong value: ').__($fieldtitles[$index]), true, ERROR );
+                           Session::addMessageAfterRedirect(sprintf( __('Mandatory fields or wrong value: \'%s\'', 'formvalidation'), __($fieldtitles[$index])), true, ERROR );
                            $ret[] = $fieldnames[$index];
                         }
                         unlink($tmpfile);
                      } else {
-                        Session::addMessageAfterRedirect( __('The field was not updated because node.js or v8js are not installed/enabled. Contact your system administrator'), true, ERROR );
+                        Session::addMessageAfterRedirect( __('The field was not updated because node.js or v8js are not installed/enabled. Contact your system administrator', 'formvalidation'), true, ERROR );
                         $ret[] = $fieldnames[$index];
                      }
                   }
@@ -191,7 +194,6 @@ class PluginFormvalidationHook extends CommonDBTM {
                }
             }
          }
-
          if (count($ret) > 0) {
             $parm->input = []; //to prevent update of unconsistant data
          }

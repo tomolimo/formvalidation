@@ -37,7 +37,7 @@ Session::checkLoginUser();
 
 $config = PluginFormvalidationConfig::getInstance();
 
-$validations = [ 'config' => $config->fields, 'pages_id' => 0, 'forms' => [ ] ]; // by default
+$validations = [ 'config' => $config->fields, 'plugin_formvalidation_pages_id' => 0, 'forms' => [ ] ]; // by default
 
 // from user session
 $validations['config']['editmode']=$_SESSION['glpiformvalidationeditmode'];
@@ -63,7 +63,7 @@ if ($obj && method_exists($obj, 'getType')) {
       'INNER JOIN'   => ['glpi_plugin_formvalidation_itemtypes' =>
                                  ['FKEY' =>
                                     [
-                                    'glpi_plugin_formvalidation_pages'     => 'itemtypes_id',
+                                    'glpi_plugin_formvalidation_pages'     => 'plugin_formvalidation_itemtypes_id',
                                     'glpi_plugin_formvalidation_itemtypes' => 'id'
                                     ]
                                  ]
@@ -73,18 +73,17 @@ if ($obj && method_exists($obj, 'getType')) {
                ]
    );
    foreach ($query as $page) {
-      $validations['pages_id']=$page['id']; // normaly there is only one page
+      $validations['plugin_formvalidation_pages_id']=$page['id']; // normaly there is only one page
       //$validations['itemtype']=$page['itemtype']; // normaly there is only one page
       $validations['itemtype']=$page['name']; // normaly there is only one page
 
-      foreach ($DB->request('glpi_plugin_formvalidation_forms', ['AND'=>['is_createitem' => $is_createitem, 'pages_id' => $page['id']]]) as $form) {
+      foreach ($DB->request('glpi_plugin_formvalidation_forms', ['AND'=>['is_createitem' => $is_createitem, 'plugin_formvalidation_pages_id' => $page['id']]]) as $form) {
          $validations['forms'][$form['id']]= Toolbox::stripslashes_deep( $form );
          $validations['forms'][$form['id']]['fields'] = []; // needed in case this form has no fields
-         foreach ($DB->request('glpi_plugin_formvalidation_fields', ['forms_id' => $form['id']]) as $field) {
+         foreach ($DB->request('glpi_plugin_formvalidation_fields', ['plugin_formvalidation_forms_id' => $form['id']]) as $field) {
             $validations['forms'][$form['id']]['fields'][$field['id']] = Toolbox::stripslashes_deep( $field );
          }
       }
    }
 }
 echo json_encode( $validations, JSON_HEX_APOS | JSON_HEX_QUOT );
-

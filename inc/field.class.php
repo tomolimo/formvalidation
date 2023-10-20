@@ -27,6 +27,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+use Glpi\Application\View\TemplateRenderer;
+
 if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
@@ -118,8 +120,8 @@ class PluginFormvalidationField extends CommonDBTM {
          'id'                 => '801',
          'table'              => 'glpi_plugin_formvalidation_forms',
          'field'              => 'name',
-         'linkfield'          => 'forms_id',
-         'name'               => __('Form', 'formvalidation'),
+         'linkfield'          => 'plugin_formvalidation_forms_id',
+         'name'               => _n('Form', 'Forms', 1, 'formvalidation'),
          'massiveaction'      => false,
          'datatype'           => 'dropdown'
       ];
@@ -151,17 +153,11 @@ class PluginFormvalidationField extends CommonDBTM {
          switch ($item->getType()) {
             case 'PluginFormvalidationForm' :
                if ($_SESSION['glpishow_count_on_tabs']) {
-                  //$nb = $dbu->countElementsInTable('glpi_plugin_formvalidation_fields',
-                  //                           "`forms_id` = '".$item->getID()."'");
                   $nb = $dbu->countElementsInTable('glpi_plugin_formvalidation_fields', ['forms_id' => $item->getID()]);
                }
                return self::createTabEntry(PluginFormvalidationField::getTypeName(Session::getPluralNumber()), $nb);
 
             case 'PluginFormvalidationField' :
-               //if ($_SESSION['glpishow_count_on_tabs']) {
-               //   $nb = countElementsInTable('glpi_plugin_formvalidation_forms',
-               //                              "`pages_id` = '".$item->getID()."'");
-               //}
                return PluginFormvalidationField::getTypeName(Session::getPluralNumber());
          }
       }
@@ -208,12 +204,12 @@ class PluginFormvalidationField extends CommonDBTM {
                         'glpi_plugin_formvalidation_fields.is_active',
                         'glpi_plugin_formvalidation_fields.show_mandatory',
                         'glpi_plugin_formvalidation_fields.show_mandatory_if',
-                        'glpi_plugin_formvalidation_fields.forms_id'
+                        'glpi_plugin_formvalidation_fields.plugin_formvalidation_forms_id'
                      ],
                      'DISTINCT' => true,
                      'FROM'     => 'glpi_plugin_formvalidation_fields',
                      'WHERE'    => [
-                        'glpi_plugin_formvalidation_fields.forms_id' => $form->getID()
+                        'glpi_plugin_formvalidation_fields.plugin_formvalidation_forms_id' => $form->getID()
                      ],
                      'ORDER'    => 'glpi_plugin_formvalidation_fields.id'
          ]);
@@ -223,7 +219,7 @@ class PluginFormvalidationField extends CommonDBTM {
             $members[] = $data;
          }
          // Add to member list (member of sub-group are not member)
-         if ($data['forms_id'] == $form->getID()) {
+         if ($data['plugin_formvalidation_forms_id'] == $form->getID()) {
             $ids[]  = $data['id'];
          }
       }
@@ -265,83 +261,17 @@ class PluginFormvalidationField extends CommonDBTM {
 
       // Display results
       if ($number) {
-         echo "<form name='formfield_form$rand' id='formfield_form$rand' method='post'
-                action='".Toolbox::getItemTypeFormURL(__CLASS__)."'>";
+         echo TemplateRenderer::getInstance()->render('@formvalidation/fields_form.html.twig', [
+              'rand' => $rand,
+              'action_url' => Toolbox::getItemTypeFormURL(__CLASS__),
+              'typeName' => PluginFormvalidationField::getTypeName(1).__(' / CSS selector', 'formvalidation'),
+              'start' => $start,
+              'number' => $number,
+              'used' => $used,
+              'field' => $field,
+              'glpi_csrf_token' => Session::getNewCSRFToken()
+            ]);
 
-         echo "<div class='spaced'>";
-
-         Session::initNavigateListItems('PluginFormvalidationField',
-                              //TRANS : %1$s is the itemtype name,
-                              //        %2$s is the name of the item (used for headings of a list)
-                                        sprintf(__('%1$s = %2$s'),
-                                                PluginFormvalidationForm::getTypeName(1), $form->getName()));
-
-         echo "<table class='tab_cadre_fixehov'>";
-
-         $header_begin  = "<tr>";
-         $header_top    = '';
-         $header_bottom = '';
-         $header_end    = '';
-
-         $header_end .= "<th>".__('ID')."</th>";
-         $header_end .= "<th>".PluginFormvalidationField::getTypeName(1).__(' / CSS selector', 'formvalidation')."</th>";
-         $header_end .= "<th>".__('Active')."</th>";
-         $header_end .= "<th>".__("Validation formula", 'formvalidation')."</th>";
-         $header_end .= "<th>".__('Force mand. sign', 'formvalidation')."</th>";
-         $header_end .= "<th>".__("Mandatory sign formula", 'formvalidation')."</th></tr>";
-         echo $header_begin.$header_top.$header_end;
-
-         for ($i=$start, $j=0; ($i < $number); $i++, $j++) {
-            $data = $used[$i];
-            $field->getFromDB($data["id"]);
-            if (!isset($field->fields['name']) || $field->fields['name'] == "") {
-               $field->fields['name'] = $field->fields['css_selector_value'];
-            }
-            Session::addToNavigateListItems('PluginFormvalidationField', $data["id"]);
-
-            echo "\n<tr class='tab_bg_1'>";
-
-            echo "<td class='center'>";
-            echo $data['id'];
-
-            echo "</td><td width='10%'>".$field->getLink();
-
-            echo "</td><td class='center'>";
-            Html::showCheckbox(['name'           => 'is_active_'.$data['id'],
-                                     'checked'        => $data['is_active']
-                                     ]);
-
-            echo "</td><td class='center' width='40%'>";
-            echo "<input type='text' size='60' maxlength=1000 name='formula_".$data['id']."' value='".htmlentities($data['formula'], ENT_QUOTES)."'>";
-
-            echo "</td><td class='center'>";
-            Html::showCheckbox(['name'           => 'show_mandatory_'.$data['id'],
-                                    'checked'        => $data['show_mandatory']
-                                    ]);
-            echo "</td><td class='center' width='40%'>";
-            echo "<input type='text' size='40' maxlength=1000 name='show_mandatory_if_".$data['id']."' value='".htmlentities($data['show_mandatory_if'], ENT_QUOTES)."'>";
-            echo "</td></tr>";
-         }
-         echo $header_begin.$header_bottom.$header_end;
-         echo "</table>";
-
-         if ($canedit) {
-            echo "<br>";
-            echo Html::submit(_x('button', 'Save'), ['name' => 'update']);
-         }
-
-         echo "</div>";
-         Html::closeForm();
-         echo "<div>";
-         echo "<table class='tab_cadre_fixe'>";
-         echo "<tr>";
-         echo "<th>".__('Formula guidelines', 'formvalidation')."</th>";
-         echo "</tr>";
-         echo "<tr><td>";
-         echo "<a href='https://github.com/tomolimo/formvalidation/wiki/Formulas' target='_new'>formvalidation/wiki/Formulas</a>";
-         echo "</td></tr>";
-         echo "</table>";
-         echo "</div>";
       } else {
          echo "<p class='center b'>".__('No item found')."</p>";
       }
@@ -354,13 +284,8 @@ class PluginFormvalidationField extends CommonDBTM {
     */
    function defineTabs($options = []) {
 
-      //        $ong = array('empty' => $this->getTypeName(1));
         $ong = [];
         $this->addDefaultFormTab($ong);
-        //$this->addStandardTab(__CLASS__, $ong, $options);
-
-        //$this->addStandardTab('PluginFormvalidationField', $ong, $options);
-        //$this->addStandardTab('PluginProcessmakerProcess_Profile', $ong, $options);
 
         return $ong;
    }
@@ -382,76 +307,17 @@ class PluginFormvalidationField extends CommonDBTM {
 
       $this->initForm($ID, $options);
 
-      // TODO
-      //$this->showTabs($options);
+
 
       $this->showFormHeader($options);
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td>".__("Name")."&nbsp;:</td>";
-      echo "<td><input type='text' size='50' maxlength=250 name='name' value='".htmlentities($this->fields["name"], ENT_QUOTES)."'></td>";
-      echo "<td rowspan='4' class='middle'>".__("Comments")."&nbsp;:</td>";
-      echo "<td class='center middle' rowspan='4'><textarea cols='40' rows='4' name='comment' >".htmlentities($this->fields["comment"], ENT_QUOTES)."</textarea></td>";
-      echo "</tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Active")."&nbsp;:</td>";
-      echo "<td>";
-      Html::showCheckbox(['name'           => 'is_active',
-                                   'checked'        => $this->fields['is_active']
-                                   ]);
-      echo "</td></tr>";
-
-      echo "</td></tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__('Value CSS selector', 'formvalidation')."&nbsp;:</td>";
-      echo "<td><input type='text' size='50' maxlength=200 name='css_selector_value' value='".htmlentities($this->fields["css_selector_value"], ENT_QUOTES)."'></td>";
-      echo "</tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__('Alternative value CSS selector', 'formvalidation')."&nbsp;:</td>";
-      echo "<td><input type='text' size='50' maxlength=200 name='css_selector_altvalue' value='".htmlentities($this->fields["css_selector_altvalue"], ENT_QUOTES)."'></td>";
-      echo "</tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__('Error sign CSS selector', 'formvalidation')."&nbsp;:</td>";
-      echo "<td><input type='text' size='50' maxlength=200 name='css_selector_errorsign' value='".htmlentities($this->fields["css_selector_errorsign"], ENT_QUOTES)."'></td>";
-      echo "</tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Force mandatory sign", 'formvalidation')."&nbsp;:</td>";
-      echo "<td>";
-      Html::showCheckbox(['name'           => 'show_mandatory',
-                                  'checked'        => $this->fields["show_mandatory"]
-                                  ]);
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Mandatory sign formula", 'formvalidation')."&nbsp;:</td>";
-      echo "<td><input type='text' size='50' maxlength=1000 name='show_mandatory_if' value='". htmlentities($this->fields["show_mandatory_if"], ENT_QUOTES)."'></td>";
-      echo "</tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__('Mandatory sign CSS selector', 'formvalidation')."&nbsp;:</td>";
-      echo "<td><input type='text' size='50' maxlength=200 name='css_selector_mandatorysign' value='".htmlentities($this->fields["css_selector_mandatorysign"], ENT_QUOTES)."'></td>";
-      echo "</tr>";
-
-      echo "<tr class='tab_bg_1'>";
-      echo "<td >".__("Validation formula", 'formvalidation')."&nbsp;:</td>";
-      echo "<td><input type='text' size='50' maxlength=1000 name='formula' value='".htmlentities($this->fields["formula"], ENT_QUOTES)."'></td>";
-      echo "</tr>";
-
-      echo "<tr><td>&nbsp;";
-      echo "</td></tr>";
-
-      echo "<tr>";
-      echo "</tr>";
+      echo TemplateRenderer::getInstance()->render('@formvalidation/field.html.twig', [
+              'data' => $this->fields
+            ]);
 
       $this->showFormButtons($options );
-      //$this->addDivForTabs();
 
    }
-
    /**
     * Summary of prepareInputForUpdate
     * @param mixed $input
@@ -473,21 +339,12 @@ class PluginFormvalidationField extends CommonDBTM {
       return $input;
    }
 
-   function post_addItem() {
-      global $DB,$CFG_GLPI;
-      $id = $this->fields['id'];
-      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/fields/".time()."/".rand()."/".$id;
-      $DB->updateOrDie(
-         'glpi_plugin_formvalidation_fields',
-         [
-            'guid' => md5($guid)
-         ],
-         [
-            'id'  => $id
-         ]
-      );
+   function prepareInputForAdd($input){
+      global $CFG_GLPI;
+      $guid = $CFG_GLPI['url_base']."/plugins/formvalidation/ajax/fields/".time()."/".rand()."/";
+      $input['guid'] = md5($guid);
+
+      return $input;
    }
-
-
 }
 

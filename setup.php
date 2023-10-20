@@ -1,4 +1,5 @@
 <?php
+use Glpi\Plugin\Hooks;
 /*
  * -------------------------------------------------------------------------
 Form Validation plugin
@@ -31,7 +32,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Original Author of file: Olivier Moron
 // ----------------------------------------------------------------------
 
-define ("PLUGIN_FORMVALIDATION_VERSION", "1.0.15");
+define ("PLUGIN_FORMVALIDATION_VERSION", "2.0.1");
 
 
 /**
@@ -62,35 +63,39 @@ function plugin_init_formvalidation() {
    //           'Ticket' => array('PluginFormvalidationHook', 'plugin_pre_item_add_formvalidation')
    //       );
 
-   $res = $DB->request([
-                  'SELECT'     => 'glpi_plugin_formvalidation_itemtypes.name',
-                  'FROM'       => 'glpi_plugin_formvalidation_itemtypes',
-                  'INNER JOIN' => [
-                     'glpi_plugin_formvalidation_pages' => [
-                        'FKEY' => [
-                           'glpi_plugin_formvalidation_pages' => 'itemtypes_id',
-                           'glpi_plugin_formvalidation_itemtypes' => 'id'
-                        ]
-                     ]
-                  ],
-         ]);
-   foreach ($res as $itemtype) {
-      $PLUGIN_HOOKS['pre_item_update']['formvalidation'][$itemtype['name']] = ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'];
-   }
 
-   $PLUGIN_HOOKS['pre_show_item']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_pre_show_tab_formvalidation'];
+
+   $PLUGIN_HOOKS['pre_show_item']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_pre_show_item_formvalidation'];
+
+   $PLUGIN_HOOKS[Hooks::PRE_ITEM_FORM]['formvalidation'] = ['PluginFormvalidationHook', 'plugin_pre_item_form_formvalidation'];
+
 
    $PLUGIN_HOOKS['post_item_form']['formvalidation'] = ['PluginFormvalidationHook', 'plugin_post_item_form_formvalidation'];
 
    $PLUGIN_HOOKS['use_massive_action']['formvalidation'] = 1;
 
-   // Add specific files to add to the header : javascript or css
    $plug = new Plugin;
    if ($plug->isActivated('formvalidation')) {
+      $res = $DB->request([
+                  'SELECT'     => 'glpi_plugin_formvalidation_itemtypes.name',
+                  'FROM'       => 'glpi_plugin_formvalidation_itemtypes',
+                  'INNER JOIN' => [
+                     'glpi_plugin_formvalidation_pages' => [
+                        'FKEY' => [
+                           'glpi_plugin_formvalidation_pages' => 'plugin_formvalidation_itemtypes_id',
+                           'glpi_plugin_formvalidation_itemtypes' => 'id'
+                        ]
+                     ]
+                  ],
+         ]);
+      foreach ($res as $itemtype) {
+         $PLUGIN_HOOKS['pre_item_update']['formvalidation'][$itemtype['name']] = ['PluginFormvalidationHook', 'plugin_pre_item_update_formvalidation'];
+      }
+
       $PLUGIN_HOOKS['add_javascript']['formvalidation'] = [
          'js/formvalidation.js',
-         'lib/moment/moment.js',
-         'js/helpers_function.js'
+         'js/helpers_function.js',
+         'lib/jquery-ui/jquery-ui.js'
       ];
       $PLUGIN_HOOKS['add_css']['formvalidation'] = ['css/formvalidation.css'];
    }
@@ -111,8 +116,8 @@ function plugin_version_formvalidation() {
       'homepage'       => 'https://github.com/tomolimo/formvalidation',
       'requirements'   => [
          'glpi' => [
-            'min' => '9.5',
-            'max' => '9.6'
+            'min' => '10.0',
+            'max' => '10.1'
          ]
       ]
    ];
@@ -126,8 +131,8 @@ function plugin_version_formvalidation() {
  */
 function plugin_formvalidation_check_prerequisites() {
 
-   if (version_compare(GLPI_VERSION, '9.5', 'lt') || version_compare(GLPI_VERSION, '9.6', 'ge')) {
-      echo "This plugin requires GLPI >= 9.5 and < 9.6";
+   if (version_compare(GLPI_VERSION, '10.0', 'lt') || version_compare(GLPI_VERSION, '10.1', 'ge')) {
+      echo "This plugin requires GLPI >= 10.0 and < 10.1";
       return false;
    }
    return true;

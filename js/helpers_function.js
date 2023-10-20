@@ -29,7 +29,6 @@ var FVH = {
   //------------------------------------------
   // helper function to verify if a string
   // is really a date
-  // uses the datepicker JQuery plugin
   //------------------------------------------
   isValidDate: function (str) {
     try {

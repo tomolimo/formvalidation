@@ -1,0 +1,89 @@
+﻿{#
+ # ---------------------------------------------------------------------
+ # Copyright (C) 2018 by Raynet SAS a company of A.Raymond Network.
+ # http://www.araymond.com
+ # -------------------------------------------------------------------------
+ #
+ # LICENSE
+ #
+ # This file is part of AR Simplified Changes plugin for GLPI.
+ #
+ # This file is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 2 of the License, or
+ # (at your option) any later version.
+ #
+ # GLPI is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with GLPI. If not, see <http://www.gnu.org/licenses/>.
+ # -----
+ #}
+
+{% import 'components/form/fields_macros.html.twig' as macros %}
+
+<form name='formfield_form{{ rand }}' id='formfield_form{{ rand }}' method='post'
+                action='{{ action_url }}' class="form-control">
+   <div class='card-body'>
+      <table class='tab_cadre_fixehov table'>
+         <tr>
+            <th class="center">{{ allCheckboxth | raw }}</th>
+            <th class='center'>ID</th>
+            <th class='center'>{{ typeName }}</th>
+            <th class='center'>CSS Selector</th>
+            <th class='center'>Active</th>
+            <th class='center'>Item creation</th>
+            {% if v8js_Loaded or field['js_path'] is not empty and field['js_path'] is defined %}
+               <th class='center'>Massive actions</th>
+            {% else %}
+               <th class='center'>Massive actions (need node.js or v8js installed/enabled)</th>
+            {% endif %}
+         </tr>
+
+
+         {% for i in start..number-1 %}
+         {% set data = used[i] %}
+         {% set link = form.getFromDB(data["id"]) %}
+         <tr>
+            <td>
+               {{ Html.showMassiveActionCheckBox(__CLASS__, data["linkID"])}}
+            </td>
+            <td class='center'>
+               {{data['id']}}
+            </td>
+            <td class='center col-4'>
+               <div>{{ form.getLink() | raw }}</div>
+            </td>
+            <td class="center col-4">
+               {{ data['css_selector'] }}
+            </td>
+            <td class="center">
+               {{ macros.checkboxField("is_active", data['is_active'], '', {'id': 'isformactive', 'full_width': true, 'disabled': true}) }}
+            </td>
+            <td class="center">
+               {{ macros.checkboxField("is_createitem", data['is_createitem'], '', {'id': 'isformitemcreation','full_width': true, 'disabled': true}) }}
+            </td>
+            <td class="center col-1">
+               {{ macros.checkboxField("use_for_massiveaction", data['use_for_massiveaction'], '', {'id': 'isformuseformassiveaction', 'full_width': true, 'disabled': true}) }}
+            </td>
+            </tr>
+         {% endfor %}
+
+         <tr>
+            <th class="center">{{ Html.getCheckAllAsCheckbox("mass#{__CLASS__}#{rand}") | raw }}</th>
+            <th class='center'>ID</th>
+            <th class='center'>{{ typeName }}</th>
+            <th class='center'>CSS Selector</th>
+            <th class='center'>Active</th>
+            <th class='center'>Item creation</th>
+            {% if v8js_Loaded or field['js_path'] is not empty and field['js_path'] is defined %}
+               <th class='center'>Massive actions</th>
+            {% else %}
+               <th class='center'>Massive actions (need node.js or v8js installed/enabled)</th>
+            {% endif %}
+         </tr>
+      </table>
+   </div>

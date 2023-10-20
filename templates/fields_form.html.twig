@@ -1,0 +1,90 @@
+﻿{#
+ # ---------------------------------------------------------------------
+ # Copyright (C) 2018 by Raynet SAS a company of A.Raymond Network.
+ # http://www.araymond.com
+ # -------------------------------------------------------------------------
+ #
+ # LICENSE
+ #
+ # This file is part of AR Simplified Changes plugin for GLPI.
+ #
+ # This file is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 2 of the License, or
+ # (at your option) any later version.
+ #
+ # GLPI is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with GLPI. If not, see <http://www.gnu.org/licenses/>.
+ # -----
+ #}
+
+{% import 'components/form/fields_macros.html.twig' as macros %}
+
+<form name='formfield_form{{ rand }}' id='formfield_form{{ rand }}' method='post'
+                action='{{ action_url }}' class="form-control">
+   <div class='card-body'>
+      <table class='tab_cadre_fixehov table'>
+         <tr>
+            <th class='center'>ID</th>
+            <th class='center'>{{ typeName }}</th>
+            <th class='center'>Active</th>
+            <th class='center'>Validation formula</th>
+            <th class='center'>Force mand. sign</th>
+            <th class='center'>Mandatory sign formula</th>
+         </tr>
+
+         {% for i in start..number-1 %}
+         {% set data = used[i] %}
+         {% set test =  field.getFromDB(data['id']) %}
+         <tr>
+            <td class='center'>
+               {{data['id']}}
+            </td>
+            <td class='center col-1'>
+               <div>{{ field.getLink() | raw }}</div>
+            </td>
+            <td class="center">
+               {{ macros.checkboxField("is_active_#{data['id']}", data['is_active']) }}
+            </td>
+            <td class="center col-5">
+               {{ macros.textField("formula_#{data['id']}", data['formula'], NULL,{'full_width': true}) }}
+            </td>
+            <td class="center">
+               {{ macros.checkboxField("show_mandatory_#{data['id']}", data['show_mandatory']) }}
+            </td>
+            <td class="center col-5">
+               {{ macros.textField("show_mandatory_if_#{data['id']}", data['formula'], NULL,{'full_width': true}) }}
+            </td>
+            </tr>
+         {% endfor %}
+
+         <tr>
+            <th class='center'>ID</th>
+            <th class='center'>{{ typeName }}</th>
+            <th class='center'>Active</th>
+            <th class='center'>Validation formula</th>
+            <th class='center'>Force mand. sign</th>
+            <th class='center'>Mandatory sign formula</th>
+         </tr>
+      </table>
+      <button class="btn btn-primary me-2" type="submit" name="update" value="Save">
+         <i class="far fa-save"></i>
+         <span>Save</span>
+      </button>
+         {{ macros.hiddenField('_glpi_csrf_token', glpi_csrf_token) }}
+   </div>
+</form>
+
+<div class="card-body">
+   <div>
+      'Formula guidelines'
+   </div>
+   <div>
+      <a href='https://github.com/tomolimo/formvalidation/wiki/Formulas' target='_new'>formvalidation/wiki/Formulas</a>
+   </div>
+</div>

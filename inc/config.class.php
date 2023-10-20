@@ -1,4 +1,5 @@
 <?php
+use Glpi\Application\View\TemplateRenderer;
 /*
  * -------------------------------------------------------------------------
 Form Validation plugin
@@ -67,27 +68,16 @@ class PluginFormvalidationConfig extends CommonDBTM {
 
    static function showConfigForm($item) {
       global $DB;
-
       $config = self::getInstance();
-
       $config->showFormHeader();
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".__("css mandatory", "formvalidation")."</td><td colspan=2>";
-      echo "<input type='text' name='css_mandatory' value='".$config->fields['css_mandatory']."'>";
-      echo "</td></tr>\n";
+      $extLoaded = extension_loaded('v8js');
+      $html = TemplateRenderer::getInstance()->render('@formvalidation/config_form.html.twig', [
+        'data' => $config->fields,
+        'extLoaded' => $extLoaded,
+     ]);
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".__("css error", "formvalidation")."</td><td colspan=2>";
-      echo "<input type='text' name='css_error' value='".$config->fields['css_error']."'>";
-      echo "</td></tr>\n";
-
-      if (!extension_loaded('v8js')) {
-         echo "<tr class='tab_bg_1'>";
-         echo "<td colspan=2>".__("nodejs path for massive action validation", "formvalidation")."</td><td colspan=2>";
-         echo "<input type='text' name='js_path' value='".$config->fields['js_path']."'>";
-         echo "</td></tr>\n";
-      }
+      echo $html;
       $config->showFormButtons(['candel'=>false]);
 
       return false;
